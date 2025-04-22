@@ -8,7 +8,7 @@
 ## 废话两句
 - 生成的很快，真的很快！而且竟然也很像！！！
 - 效果很好，感谢小破站的开源哈哈哈哈哈
-- 我不知道怎么传音频上来给你们欣赏，此间附赠道友B站的传送阵demo（https://huggingface.co/spaces/IndexTeam/IndexTTS）
+- 我不知道怎么传音频上来给你们欣赏，此间附赠道友B站的传送阵demo(https://huggingface.co/spaces/IndexTeam/IndexTTS)
 
 
 ## 功能特点
