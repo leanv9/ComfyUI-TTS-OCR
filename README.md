@@ -1,29 +1,31 @@
 
-https://github.com/user-attachments/assets/4f85fc18-648e-433a-aeea-dc44754bf0ee
 # ComfyUI-Index-TTS
 
 使用IndexTTS模型在ComfyUI中实现高质量文本到语音转换的自定义节点。支持中文和英文文本，可以基于参考音频复刻声音特征。
 
-![示例工作流]![微信截图_20250422170940](https://github.com/user-attachments/assets/41960425-f739-4496-9520-8f9cae34ff51)
-![微信截图_20250422173618](https://github.com/user-attachments/assets/1ff0d1d0-7a04-4d91-9d53-cd119250ed67)
+![示例截图1](https://github.com/user-attachments/assets/41960425-f739-4496-9520-8f9cae34ff51)
+![示例截图2](https://github.com/user-attachments/assets/1ff0d1d0-7a04-4d91-9d53-cd119250ed67)
 
 ## 废话两句
+
 - 生成的很快，真的很快！而且竟然也很像！！！
 - 效果很好，感谢小破站的开源哈哈哈哈哈
-- 附赠道友B站的传送阵demo(https://huggingface.co/spaces/IndexTeam/IndexTTS)
+- 附赠道友B站的传送阵[demo](https://huggingface.co/spaces/IndexTeam/IndexTTS)
+
 
 ## 演示案例
 
 以下是一些实际使用效果演示：
 
 | 参考音频 | 输入文本 | 推理结果 |
-|---------|---------|---------|----------|
+|---------|---------|---------|
 | https://github.com/user-attachments/assets/5e8cb570-242f-4a16-8472-8a64a23183fb| 我想把钉钉的自动回复设置成“服务器繁忙，请稍后再试”，仅对老板可见。 |https://github.com/user-attachments/assets/d8b89db3-5cf5-406f-b930-fa75d13ff0bd|
 |Uploading 御姐配音.mov…| 我想把钉钉的自动回复设置成“服务器繁忙，请稍后再试”，仅对老板可见。 |https://github.com/user-attachments/assets/6e3e63ed-2d3d-4d5a-bc2e-b42530748fa0|
 
 - 长文本测试：
 
 https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b
+
 
 
 ## 功能特点
@@ -102,6 +104,7 @@ https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b
 ## 音色优化建议
 
 要提高音色相似度：
+
 - 使用高质量的参考音频（清晰、无噪音）
 - 尝试调整`temperature`参数（0.7-0.9范围内效果较好）
 - 增加`repetition_penalty`（10.0-12.0）可以提高音色一致性
@@ -113,13 +116,15 @@ https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b
 - 对于Windows用户，无需额外安装特殊依赖，节点已优化
 - 如果显示CUDA错误，尝试重启ComfyUI或减少`num_beams`值
 
+
 ## 鸣谢
 
 - 基于原始[IndexTTS](https://github.com/index-tts/index-tts)模型
 - 感谢ComfyUI社区的支持
-- 
+- 感谢使用！
 
-> 注：RTF (Real-Time Factor) 是实时因子，值越小表示生成速度越快。例如RTF=0.3表示生成10秒的音频只需要3秒。
+
+**注**：RTF (Real-Time Factor) 是实时因子，值越小表示生成速度越快。例如RTF=0.3表示生成10秒的音频只需要3秒。
 
 ## 许可证
 
