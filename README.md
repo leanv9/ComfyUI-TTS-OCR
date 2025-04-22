@@ -12,21 +12,18 @@
 - 效果很好，感谢小破站的开源哈哈哈哈哈
 - 附赠道友B站的传送阵[demo](https://huggingface.co/spaces/IndexTeam/IndexTTS)
 
-
 ## 演示案例
 
 以下是一些实际使用效果演示：
 
 | 参考音频 | 输入文本 | 推理结果 |
 |---------|---------|---------|
-| https://github.com/user-attachments/assets/5e8cb570-242f-4a16-8472-8a64a23183fb| 我想把钉钉的自动回复设置成“服务器繁忙，请稍后再试”，仅对老板可见。 |https://github.com/user-attachments/assets/d8b89db3-5cf5-406f-b930-fa75d13ff0bd|
-|Uploading 御姐配音.mov…| 我想把钉钉的自动回复设置成“服务器繁忙，请稍后再试”，仅对老板可见。 |https://github.com/user-attachments/assets/6e3e63ed-2d3d-4d5a-bc2e-b42530748fa0|
+| [原声参考](https://github.com/user-attachments/assets/5e8cb570-242f-4a16-8472-8a64a23183fb) | 我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。 | [生成结果](https://github.com/user-attachments/assets/d8b89db3-5cf5-406f-b930-fa75d13ff0bd) |
+|https://github.com/user-attachments/assets/8e774223-e0f7-410b-ae4e-e46215e47e96| 我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。 | [生成结果](https://github.com/user-attachments/assets/6e3e63ed-2d3d-4d5a-bc2e-b42530748fa0) |
 
 - 长文本测试：
 
-https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b
-
-
+[长文本合成演示](https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b)
 
 ## 功能特点
 
@@ -122,7 +119,6 @@ https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b
 - 基于原始[IndexTTS](https://github.com/index-tts/index-tts)模型
 - 感谢ComfyUI社区的支持
 - 感谢使用！
-
 
 **注**：RTF (Real-Time Factor) 是实时因子，值越小表示生成速度越快。例如RTF=0.3表示生成10秒的音频只需要3秒。
 
