@@ -55,9 +55,7 @@
 
 1. 从[Hugging Face](https://huggingface.co/IndexTeam/Index-TTS/tree/main)或者[魔搭](https://modelscope.cn/models/IndexTeam/Index-TTS)下载IndexTTS模型文件
 2. 将模型文件放置在`ComfyUI/models/Index-TTS`目录中（如果目录不存在，请创建）
-3. 确保至少包含以下文件：
-
-   模型文件夹结构应该类似这样：
+3. 模型文件夹结构：
    
    ```
    ComfyUI/models/Index-TTS/
