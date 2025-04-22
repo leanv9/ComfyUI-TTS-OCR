@@ -1,0 +1,208 @@
+{
+  "id": "62dce248-d47e-4bc1-9ea1-41aa40254efb",
+  "revision": 0,
+  "last_node_id": 39,
+  "last_link_id": 61,
+  "nodes": [
+    {
+      "id": 36,
+      "type": "IndexTTSNode",
+      "pos": [
+        1404,
+        515.6666870117188
+      ],
+      "size": [
+        400,
+        328
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "reference_audio",
+          "name": "reference_audio",
+          "type": "AUDIO",
+          "link": 60
+        }
+      ],
+      "outputs": [
+        {
+          "label": "audio",
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            61
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "IndexTTSNode",
+        "ttNbgOverride": {
+          "color": "#332922",
+          "bgcolor": "#593930",
+          "groupcolor": "#b06634"
+        }
+      },
+      "widgets_values": [
+        "我想把钉钉的自动回复设置成“服务器繁忙，请稍后再试”，仅对老板可见。",
+        "auto",
+        1,
+        1,
+        0.8,
+        30,
+        10,
+        0,
+        3,
+        600,
+        "auto"
+      ],
+      "color": "#332922",
+      "bgcolor": "#593930"
+    },
+    {
+      "id": 37,
+      "type": "LoadAudio",
+      "pos": [
+        1021.2010498046875,
+        516.1350708007812
+      ],
+      "size": [
+        315,
+        136
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "音频",
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            60
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.29",
+        "Node name for S&R": "LoadAudio",
+        "ttNbgOverride": {
+          "color": "#332922",
+          "bgcolor": "#593930",
+          "groupcolor": "#b06634"
+        }
+      },
+      "widgets_values": [
+        "周杰伦_.flac",
+        null,
+        ""
+      ],
+      "color": "#332922",
+      "bgcolor": "#593930"
+    },
+    {
+      "id": 38,
+      "type": "PreviewAudio",
+      "pos": [
+        1870.352783203125,
+        508.9063720703125
+      ],
+      "size": [
+        315,
+        88
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "音频",
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 61
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.29",
+        "Node name for S&R": "PreviewAudio",
+        "ttNbgOverride": {
+          "color": "#332922",
+          "bgcolor": "#593930",
+          "groupcolor": "#b06634"
+        }
+      },
+      "widgets_values": [],
+      "color": "#332922",
+      "bgcolor": "#593930"
+    },
+    {
+      "id": 39,
+      "type": "Note",
+      "pos": [
+        1874.2093505859375,
+        668.6861572265625
+      ],
+      "size": [
+        477.1900939941406,
+        225.289306640625
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "- **temperature** (默认1.0): 控制生成随机性，较高的值增加多样性但可能降低稳定性\n- **top_p** (默认0.8): 采样时考虑的概率质量，降低可获得更准确但可能不够自然的发音\n- **top_k** (默认30): 采样时考虑的候选项数量\n- **repetition_penalty** (默认10.0): 重复内容的惩罚系数\n- **length_penalty** (默认0.0): 生成内容长度的调节因子\n- **num_beams** (默认3): 束搜索的宽度，增加可提高质量但降低速度\n- **max_mel_tokens** (默认600): 最大音频token数量\n- **sentence_split** (默认auto): 句子拆分方式"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [
+      60,
+      37,
+      0,
+      36,
+      0,
+      "AUDIO"
+    ],
+    [
+      61,
+      36,
+      0,
+      38,
+      0,
+      "AUDIO"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.1000000000000005,
+      "offset": [
+        -578.7678833007812,
+        -51.796268463134766
+      ]
+    },
+    "ue_links": [],
+    "0246.VERSION": [
+      0,
+      0,
+      4
+    ],
+    "frontendVersion": "1.16.9",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
