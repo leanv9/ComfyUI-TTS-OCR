@@ -2,7 +2,8 @@
 
 使用IndexTTS模型在ComfyUI中实现高质量文本到语音转换的自定义节点。支持中文和英文文本，可以基于参考音频复刻声音特征。
 
-![示例工作流](workflow\workflow.json)
+![示例工作流]![微信截图_20250422170940](https://github.com/user-attachments/assets/41960425-f739-4496-9520-8f9cae34ff51)
+
 
 ## 功能特点
 
@@ -95,16 +96,7 @@
 
 - 基于原始[IndexTTS](https://github.com/index-tts/index-tts)模型
 - 感谢ComfyUI社区的支持
-
-## 演示案例
-
-以下是一些实际使用效果演示：
-
-| 参考音频 | 输入文本 | 推理结果 | 耗时(RTF) |
-|---------|---------|---------|----------|
-| [男声示例.wav](c:\Users\ZYB\Downloads\indexTTS\周杰伦_.flac) | 「我想把钉钉的自动回复设置成“服务器繁忙，请稍后再试”，仅对老板可见。」 | [结果音频1](https://example.com/result1.wav) | 2.51秒 (0.30) |
-| [女声示例.wav](c:\Users\ZYB\Downloads\indexTTS\杨幂.flac) | 「欢迎使用ComfyUI中的IndexTTS节点，它支持中英文混合。」 | [结果音频2](https://example.com/result2.wav) | 2.67秒 (0.32) |
-| [英文示例.wav](c:\Users\ZYB\Downloads\indexTTS\奥巴马.flac) | 「Hello, this is a demo of the IndexTTS node in ComfyUI.」 | [结果音频3](https://example.com/result3.wav) | 1.89秒 (0.28) |
+- 
 
 > 注：RTF (Real-Time Factor) 是实时因子，值越小表示生成速度越快。例如RTF=0.3表示生成10秒的音频只需要3秒。
 
