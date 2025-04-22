@@ -3,6 +3,12 @@
 使用IndexTTS模型在ComfyUI中实现高质量文本到语音转换的自定义节点。支持中文和英文文本，可以基于参考音频复刻声音特征。
 
 ![示例工作流]![微信截图_20250422170940](https://github.com/user-attachments/assets/41960425-f739-4496-9520-8f9cae34ff51)
+![微信截图_20250422173618](https://github.com/user-attachments/assets/1ff0d1d0-7a04-4d91-9d53-cd119250ed67)
+
+## 废话两句
+- 生成的很快，真的很快！而且竟然也很像！！！
+- 效果很好，感谢小破站的开源哈哈哈哈哈
+- 我不知道怎么传音频上来给你们欣赏，此间附赠道友B站的传送阵demo（https://huggingface.co/spaces/IndexTeam/IndexTTS）
 
 
 ## 功能特点
