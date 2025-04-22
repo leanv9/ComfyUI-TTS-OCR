@@ -21,7 +21,7 @@
 
    ```bash
    cd ComfyUI/custom_nodes
-   git clone https://github.com/chenpipi0807/Comfyui-index-tts.git
+   git clone https://github.com/chenpipi0807/ComfyUI-Index-TTS.git
    ```
 
 2. 安装依赖：
