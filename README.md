@@ -53,13 +53,27 @@
 
 ### 下载模型
 
-1. 从[Hugging Face](https://huggingface.co/IndexTeam/Index-TTS/tree/main)下载IndexTTS模型文件
+1. 从[Hugging Face](https://huggingface.co/IndexTeam/Index-TTS/tree/main)或者[魔搭](https://modelscope.cn/models/IndexTeam/Index-TTS)下载IndexTTS模型文件
 2. 将模型文件放置在`ComfyUI/models/Index-TTS`目录中（如果目录不存在，请创建）
 3. 确保至少包含以下文件：
-   - `bigvgan_generator.pth`
-   - `bpe.model`
-   - `gpt.pth`
-   - `config.yaml`
+
+   模型文件夹结构应该类似这样：
+   
+   ```
+   ComfyUI/models/Index-TTS/
+   ├── .gitattributes
+   ├── bigvgan_discriminator.pth
+   ├── bigvgan_generator.pth
+   ├── bpe.model
+   ├── config.yaml
+   ├── configuration.json
+   ├── dvae.pth
+   ├── gpt.pth
+   ├── README.md
+   └── unigram_12000.vocab
+   ```
+   
+   确保所有文件都已完整下载，特别是较大的模型文件如`bigvgan_discriminator.pth`(1.6GB)和`gpt.pth`(696MB)。
 
 ## 使用方法
 
