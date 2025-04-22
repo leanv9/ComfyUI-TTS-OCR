@@ -27,7 +27,7 @@
 2. 安装依赖：
 
    ```bash
-   cd Comfyui-index-tts
+   cd ComfyUI-Index-TTS
    pip install -r requirements.txt
    ```
 
