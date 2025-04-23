@@ -1,29 +1,72 @@
 {
   "id": "62dce248-d47e-4bc1-9ea1-41aa40254efb",
   "revision": 0,
-  "last_node_id": 39,
-  "last_link_id": 61,
+  "last_node_id": 42,
+  "last_link_id": 65,
   "nodes": [
     {
-      "id": 36,
-      "type": "IndexTTSNode",
+      "id": 37,
+      "type": "LoadAudio",
       "pos": [
-        1404,
-        515.6666870117188
+        1021.2010498046875,
+        516.1350708007812
       ],
       "size": [
-        400,
-        328
+        315,
+        136
       ],
       "flags": {},
-      "order": 2,
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "label": "音频",
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            62
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.29",
+        "Node name for S&R": "LoadAudio",
+        "ttNbgOverride": {
+          "color": "#332922",
+          "bgcolor": "#593930",
+          "groupcolor": "#b06634"
+        }
+      },
+      "widgets_values": [
+        "咒术回战-五条悟.mp3",
+        null,
+        ""
+      ],
+      "color": "#332922",
+      "bgcolor": "#593930"
+    },
+    {
+      "id": 40,
+      "type": "IndexTTSNode",
+      "pos": [
+        1400.4912109375,
+        516.2217407226562
+      ],
+      "size": [
+        392.21124267578125,
+        402.77203369140625
+      ],
+      "flags": {},
+      "order": 1,
       "mode": 0,
       "inputs": [
         {
           "label": "reference_audio",
           "name": "reference_audio",
           "type": "AUDIO",
-          "link": 60
+          "link": 62
         }
       ],
       "outputs": [
@@ -32,7 +75,8 @@
           "name": "audio",
           "type": "AUDIO",
           "links": [
-            61
+            63,
+            64
           ]
         }
       ],
@@ -45,7 +89,7 @@
         }
       },
       "widgets_values": [
-        "我想把钉钉的自动回复设置成“服务器繁忙，请稍后再试”，仅对老板可见。",
+        "It's Thursday, let's go crazy Thursday!",
         "auto",
         1,
         1,
@@ -61,34 +105,39 @@
       "bgcolor": "#593930"
     },
     {
-      "id": 37,
-      "type": "LoadAudio",
+      "id": 41,
+      "type": "AudioCleanupNode",
       "pos": [
-        1021.2010498046875,
-        516.1350708007812
+        1940.7728271484375,
+        743.5275268554688
       ],
       "size": [
-        315,
-        136
+        405.5999755859375,
+        154
       ],
       "flags": {},
-      "order": 1,
+      "order": 3,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "label": "audio",
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 64
+        }
+      ],
       "outputs": [
         {
-          "label": "音频",
-          "name": "AUDIO",
+          "label": "enhanced_audio",
+          "name": "enhanced_audio",
           "type": "AUDIO",
           "links": [
-            60
+            65
           ]
         }
       ],
       "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.29",
-        "Node name for S&R": "LoadAudio",
+        "Node name for S&R": "AudioCleanupNode",
         "ttNbgOverride": {
           "color": "#332922",
           "bgcolor": "#593930",
@@ -96,33 +145,35 @@
         }
       },
       "widgets_values": [
-        "周杰伦_.flac",
-        null,
-        ""
+        1,
+        1,
+        200,
+        8000,
+        "true"
       ],
       "color": "#332922",
       "bgcolor": "#593930"
     },
     {
-      "id": 38,
+      "id": 42,
       "type": "PreviewAudio",
       "pos": [
-        1870.352783203125,
-        508.9063720703125
+        2404.8466796875,
+        749.0794677734375
       ],
       "size": [
         315,
         88
       ],
       "flags": {},
-      "order": 3,
+      "order": 4,
       "mode": 0,
       "inputs": [
         {
           "label": "音频",
           "name": "audio",
           "type": "AUDIO",
-          "link": 61
+          "link": 65
         }
       ],
       "outputs": [],
@@ -141,43 +192,73 @@
       "bgcolor": "#593930"
     },
     {
-      "id": 39,
-      "type": "Note",
+      "id": 38,
+      "type": "PreviewAudio",
       "pos": [
-        1874.2093505859375,
-        668.6861572265625
+        1955.1611328125,
+        515.1941528320312
       ],
       "size": [
-        477.1900939941406,
-        225.289306640625
+        315,
+        88
       ],
       "flags": {},
-      "order": 0,
+      "order": 2,
       "mode": 0,
-      "inputs": [],
-      "outputs": [],
-      "properties": {},
-      "widgets_values": [
-        "- **temperature** (默认1.0): 控制生成随机性，较高的值增加多样性但可能降低稳定性\n- **top_p** (默认0.8): 采样时考虑的概率质量，降低可获得更准确但可能不够自然的发音\n- **top_k** (默认30): 采样时考虑的候选项数量\n- **repetition_penalty** (默认10.0): 重复内容的惩罚系数\n- **length_penalty** (默认0.0): 生成内容长度的调节因子\n- **num_beams** (默认3): 束搜索的宽度，增加可提高质量但降低速度\n- **max_mel_tokens** (默认600): 最大音频token数量\n- **sentence_split** (默认auto): 句子拆分方式"
+      "inputs": [
+        {
+          "label": "音频",
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 63
+        }
       ],
-      "color": "#432",
-      "bgcolor": "#653"
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.29",
+        "Node name for S&R": "PreviewAudio",
+        "ttNbgOverride": {
+          "color": "#332922",
+          "bgcolor": "#593930",
+          "groupcolor": "#b06634"
+        }
+      },
+      "widgets_values": [],
+      "color": "#332922",
+      "bgcolor": "#593930"
     }
   ],
   "links": [
     [
-      60,
+      62,
       37,
       0,
-      36,
+      40,
       0,
       "AUDIO"
     ],
     [
-      61,
-      36,
+      63,
+      40,
       0,
       38,
+      0,
+      "AUDIO"
+    ],
+    [
+      64,
+      40,
+      0,
+      41,
+      0,
+      "AUDIO"
+    ],
+    [
+      65,
+      41,
+      0,
+      42,
       0,
       "AUDIO"
     ]
@@ -186,19 +267,19 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.1000000000000005,
+      "scale": 1.1671841070450009,
       "offset": [
-        -578.7678833007812,
-        -51.796268463134766
+        -793.8505644927404,
+        -115.25129616587267
       ]
     },
+    "frontendVersion": "1.16.8",
     "ue_links": [],
     "0246.VERSION": [
       0,
       0,
       4
     ],
-    "frontendVersion": "1.16.9",
     "VHS_latentpreview": false,
     "VHS_latentpreviewrate": 0,
     "VHS_MetadataImage": true,
