@@ -38,6 +38,8 @@
   - 主要功能：去除混响、降噪、频率滤波和音频归一化
   - 适用于处理有杂音或混响问题的TTS输出
 
+- 修复了对于transformers版本强依赖的问题
+
 #### Audio Cleaner 参数说明
 
 **必需参数**：
@@ -163,13 +165,6 @@
 - 如果出现“模型加载失败”，检查模型文件是否完整且放置在正确目录
 - 对于Windows用户，无需额外安装特殊依赖，节点已优化
 - 如果显示CUDA错误，尝试重启ComfyUI或减少`num_beams`值
-- **重要：transformers库兼容性问题**：
-  - transformers 4.49版本及以后，`LogitsWarper`已合并到`LogitsProcessor`中，可能导致错误
-  - 如果遇到相关错误，建议降级到transformers 4.48.3版本：
-
-    ```bash
-    pip install transformers==4.48.3
-    ```
 
 
 ## 鸣谢
