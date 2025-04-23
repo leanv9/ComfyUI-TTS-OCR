@@ -14,14 +14,17 @@ if current_dir not in sys.path:
 
 # 导入节点定义
 from .nodes import IndexTTSNode
+from .audio_enhancement import AudioCleanupNode
 
 # 注册ComfyUI节点
 NODE_CLASS_MAPPINGS = {
     "IndexTTSNode": IndexTTSNode,
+    "AudioCleanupNode": AudioCleanupNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "IndexTTSNode": "Index TTS",
+    "AudioCleanupNode": "Audio Cleaner",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
