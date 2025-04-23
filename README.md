@@ -25,6 +25,41 @@
 
 <video src="https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b"></video>
 
+
+## 更新日志
+
+### 2025-04-23
+
+- 新增 **Audio Cleaner** 节点，用于处理TTS输出音频中的混响和杂音问题
+  - 该节点可以连接在 Index TTS 节点之后，优化生成音频的质量
+  - 主要功能：去除混响、降噪、频率滤波和音频归一化
+  - 适用于处理有杂音或混响问题的TTS输出
+
+#### Audio Cleaner 参数说明
+
+**必需参数**：
+- **audio**: 输入音频（通常为 Index TTS 节点的输出）
+- **denoise_strength**: 降噪强度（0.1-1.0，默认0.5）
+  - 值越大，降噪效果越强，但可能影响语音自然度
+- **dereverb_strength**: 去混响强度（0.0-1.0，默认0.7）
+  - 值越大，去混响效果越强，适合处理在回声环境下录制的参考音频
+
+**可选参数**：
+- **high_pass_freq**: 高通滤波器频率（20-500Hz，默认100Hz）
+  - 用于过滤低频噪音，如环境嗡嗡声
+- **low_pass_freq**: 低通滤波器频率（1000-16000Hz，默认8000Hz）
+  - 用于过滤高频噪音
+- **normalize**: 是否归一化音频（"true"或"false"，默认"true"）
+  - 开启可使音量更均衡
+
+#### 使用建议
+
+- 对于有明显混响的音频，将 `dereverb_strength` 设置为 0.7-0.9
+- 对于有背景噪音的音频，将 `denoise_strength` 设置为 0.5-0.8
+- 如果处理后音频听起来不自然，尝试减小 `dereverb_strength` 和 `denoise_strength`
+- 高通和低通滤波器可以微调以获得最佳人声效果
+
+
 ## 功能特点
 
 - 支持中文和英文文本合成
