@@ -1,8 +1,37 @@
 import torch
-from transformers import LogitsWarper
+import importlib.metadata
+
+# 检查transformers库版本
+try:
+    transformers_version = importlib.metadata.version('transformers')
+    major, minor = map(int, transformers_version.split('.')[:2])
+    use_new_api = (major > 4) or (major == 4 and minor >= 49)
+except (importlib.metadata.PackageNotFoundError, ValueError):
+    # 如果无法确定版本，假设使用旧版本API
+    use_new_api = False
+
+# 根据版本选择正确的导入
+if use_new_api:
+    try:
+        # 在新版本中，LogitsWarper已合并到LogitsProcessor
+        from transformers import LogitsProcessor as BaseClass
+        print("[IndexTTS] 使用transformers新版API (>= 4.49)，LogitsProcessor")
+    except ImportError:
+        # 如果新导入失败，尝试旧版本
+        from transformers import LogitsWarper as BaseClass
+        print("[IndexTTS] 使用transformers旧版API (< 4.49)，LogitsWarper")
+else:
+    # 旧版本继续使用LogitsWarper
+    try:
+        from transformers import LogitsWarper as BaseClass
+        print("[IndexTTS] 使用transformers旧版API (< 4.49)，LogitsWarper")
+    except ImportError:
+        # 如果旧导入失败，尝试新版本
+        from transformers import LogitsProcessor as BaseClass
+        print("[IndexTTS] 使用transformers新版API (>= 4.49)，LogitsProcessor")
 
 
-class TypicalLogitsWarper(LogitsWarper):
+class TypicalLogitsWarper(BaseClass):
     def __init__(self, mass: float = 0.9, filter_value: float = -float("Inf"), min_tokens_to_keep: int = 1):
         self.filter_value = filter_value
         self.mass = mass
