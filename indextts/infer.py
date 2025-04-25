@@ -449,6 +449,56 @@ class IndexTTS:
         print(f">> [fast] RTF: {(end_time - start_time) / wav_length:.4f}")
 
         # save audio
+        # 应用速度变换（如果不是默认值）
+        if speed != 1.0:
+            print(f">> Applying speed factor: {speed}")
+            # 使用torchaudio的时间拉伸功能改变语速
+            # 注意：速度值大于1表示加速（音频变短），所以用1/speed作为拉伸因子
+            stretch_factor = 1.0 / speed
+            original_length = wav.shape[-1]
+            try:
+                # 创建一个临时tensor以避免原地修改
+                temp_wav = wav.clone()
+                # 应用时间拉伸
+                if hasattr(torchaudio.transforms, 'TimeStretch'):
+                    # 较新版本的torchaudio
+                    time_stretch = torchaudio.transforms.TimeStretch(
+                        hop_length=256,
+                        n_freq=1025,
+                        fixed_rate=stretch_factor
+                    ).to(wav.device)
+                    # torchaudio的TimeStretch需要频谱图输入，所以先转换
+                    spec = torch.stft(
+                        temp_wav, 
+                        n_fft=2048, 
+                        hop_length=256, 
+                        win_length=1024, 
+                        window=torch.hann_window(1024).to(wav.device),
+                        return_complex=True
+                    )
+                    # 应用时间拉伸
+                    stretched_spec = time_stretch(torch.abs(spec))
+                    # 转回波形
+                    wav = torch.istft(
+                        stretched_spec * (spec / (torch.abs(spec) + 1e-7)),
+                        n_fft=2048,
+                        hop_length=256,
+                        win_length=1024,
+                        window=torch.hann_window(1024).to(wav.device),
+                    )
+                else:
+                    # 备选方案：使用resample模拟速度变化
+                    original_sr = sampling_rate
+                    target_sr = int(original_sr * stretch_factor)  # 降低采样率来加速，提高采样率来减速
+                    resampler = torchaudio.transforms.Resample(original_sr, target_sr).to(wav.device)
+                    temp_wav = resampler(temp_wav)
+                    # 还原到原始采样率
+                    resampler_back = torchaudio.transforms.Resample(target_sr, original_sr).to(wav.device)
+                    wav = resampler_back(temp_wav)
+                print(f">> Speed change applied: Original length={original_length/sampling_rate:.2f}s, New length={wav.shape[-1]/sampling_rate:.2f}s")
+            except Exception as e:
+                print(f">> Warning: Failed to apply speed change: {e}, fallback to original audio")
+
         wav = wav.cpu() # to cpu
         if output_path:
             # 直接保存音频到指定路径中
@@ -614,6 +664,56 @@ class IndexTTS:
         # torchaudio.save(output_path, wav.cpu().type(torch.int16), sampling_rate)
         # print(">> wav file saved to:", output_path)
         
+        # 应用速度变换（如果不是默认值）
+        if speed != 1.0:
+            print(f">> Applying speed factor: {speed}")
+            # 使用torchaudio的时间拉伸功能改变语速
+            # 注意：速度值大于1表示加速（音频变短），所以用1/speed作为拉伸因子
+            stretch_factor = 1.0 / speed
+            original_length = wav.shape[-1]
+            try:
+                # 创建一个临时tensor以避免原地修改
+                temp_wav = wav.clone()
+                # 应用时间拉伸
+                if hasattr(torchaudio.transforms, 'TimeStretch'):
+                    # 较新版本的torchaudio
+                    time_stretch = torchaudio.transforms.TimeStretch(
+                        hop_length=256,
+                        n_freq=1025,
+                        fixed_rate=stretch_factor
+                    ).to(wav.device)
+                    # torchaudio的TimeStretch需要频谱图输入，所以先转换
+                    spec = torch.stft(
+                        temp_wav, 
+                        n_fft=2048, 
+                        hop_length=256, 
+                        win_length=1024, 
+                        window=torch.hann_window(1024).to(wav.device),
+                        return_complex=True
+                    )
+                    # 应用时间拉伸
+                    stretched_spec = time_stretch(torch.abs(spec))
+                    # 转回波形
+                    wav = torch.istft(
+                        stretched_spec * (spec / (torch.abs(spec) + 1e-7)),
+                        n_fft=2048,
+                        hop_length=256,
+                        win_length=1024,
+                        window=torch.hann_window(1024).to(wav.device),
+                    )
+                else:
+                    # 备选方案：使用resample模拟速度变化
+                    original_sr = sampling_rate
+                    target_sr = int(original_sr * stretch_factor)  # 降低采样率来加速，提高采样率来减速
+                    resampler = torchaudio.transforms.Resample(original_sr, target_sr).to(wav.device)
+                    temp_wav = resampler(temp_wav)
+                    # 还原到原始采样率
+                    resampler_back = torchaudio.transforms.Resample(target_sr, original_sr).to(wav.device)
+                    wav = resampler_back(temp_wav)
+                print(f">> Speed change applied: Original length={original_length/sampling_rate:.2f}s, New length={wav.shape[-1]/sampling_rate:.2f}s")
+            except Exception as e:
+                print(f">> Warning: Failed to apply speed change: {e}, fallback to original audio")
+                
         # save audio
         wav = wav.cpu() # to cpu
         if output_path:
