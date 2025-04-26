@@ -205,7 +205,7 @@ class IndexTTS:
         Split the text into sentences based on punctuation marks.
         """
         # 匹配标点符号（包括中英文标点）
-        pattern = r'(?<=[.!?;。！？；])\s*'
+        pattern = r'(?<=[.!?;,。！？；，])\s*'
         sentences = re.split(pattern, text)
         # 过滤掉空字符串和仅包含标点符号的字符串
         return [
