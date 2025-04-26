@@ -99,7 +99,9 @@
 
    ```bash
    cd ComfyUI-Index-TTS
-   pip install -r requirements.txt
+   .\python_embeded\python.exe -m pip install -r requirements.txt
+
+   git pull # 更新很频繁你可能需要
    ```
 
 ### 下载模型
