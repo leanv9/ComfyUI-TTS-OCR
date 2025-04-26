@@ -8,22 +8,22 @@
 
 ## 废话两句
 
-- 生成的很快，真的很快！而且竟然也很像！！！
-- 效果很好，感谢小破站的开源哈哈哈哈哈
-- 附赠道友B站的传送阵[demo](https://huggingface.co/spaces/IndexTeam/IndexTTS)
+- 生成的很快，真的很快！而且竟然也很像！！！ 生成的很快，真的很快！而且竟然也很像！！！
+- 效果很好，感谢小破站的开源哈哈哈哈哈 效果很好，感谢小破站的开源哈哈哈哈哈
+- 附赠道友B站的传送阵 附赠道友B站的传送阵[demo](https://huggingface.co/spaces/IndexTeam/IndexTTS)
 
 ## 演示案例
 
-以下是一些实际使用效果演示：
+以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：以下是一些实际使用效果演示：
 
 | 参考音频 | 输入文本 | 推理结果 |
 |---------|---------|---------|
-| <video src="https://github.com/user-attachments/assets/5e8cb570-242f-4a16-8472-8a64a23183fb"></video> | 我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。 | <video src="https://github.com/user-attachments/assets/d8b89db3-5cf5-406f-b930-fa75d13ff0bd"></video> |
+| <video video src=="https://github.com/user-attachments/assets/5e8cb570-242f-4a16-8472-8a64a23183fb"></videovideo> | 我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。  我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。 | <video video src=="https://github.com/user-attachments/assets/d8b89db3-5cf5-406f-b930-fa75d13ff0bd"></videovideo> |
 | <video src="https://github.com/user-attachments/assets/8e774223-e0f7-410b-ae4e-e46215e47e96"></video> | 我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。 | <video src="https://github.com/user-attachments/assets/6e3e63ed-2d3d-4d5a-bc2e-b42530748fa0"></video> |
 
-- 长文本测试：
+- 长文本测试： 长文本测试：
 
-<video src="https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b"></video>
+<video video src=="https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b"></videovideo>
 
 
 ## 更新日志
@@ -42,14 +42,14 @@
 
 #### Audio Cleaner 参数说明
 
-**必需参数**：
+**必需参数**：：
 - **audio**: 输入音频（通常为 Index TTS 节点的输出）
 - **denoise_strength**: 降噪强度（0.1-1.0，默认0.5）
   - 值越大，降噪效果越强，但可能影响语音自然度
 - **dereverb_strength**: 去混响强度（0.0-1.0，默认0.7）
   - 值越大，去混响效果越强，适合处理在回声环境下录制的参考音频
 
-**可选参数**：
+**可选参数**：：
 - **high_pass_freq**: 高通滤波器频率（20-500Hz，默认100Hz）
   - 用于过滤低频噪音，如环境嗡嗡声
 - **low_pass_freq**: 低通滤波器频率（1000-16000Hz，默认8000Hz）
@@ -66,7 +66,14 @@
 
 
 ### 2025-04-25
-- 优化了阿拉伯数字的发音判断问题；可以参考这个case使用：“4 0 9 0”会发音四零九零，“4090”会发音四千零九十；
+- 优化了阿拉伯数字的发音判断问题；可以参考这个case使用：“4 0 9 0”会发音四零九零，“4090”会发音四千零九十； 优化了阿拉伯数字的发音判断问题；可以参考这个case使用：“4 0 9 0”会发音四零九零，“4090”会发音四千零九十； 优化了阿拉伯数字的发音判断问题；可以参考这个case使用：“4 0 9 0”会发音四零九零，“4090”会发音四千零九十； 优化了阿拉伯数字的发音判断问题；可以参考这个case使用：“4 0 9 0”会发音四零九零，“4090”会发音四千零九十；
+
+
+### 2025-04-26
+- 优化英文逗号导致吞字的问题；
+- 如果你是pytorch2.7运行报错，短期无法适配，请尝试降级方案(.\python_embeded\python.exe -m pip install transformers==4.48.3)
+
+
 
 ## 功能特点
 
@@ -87,7 +94,7 @@
    git clone https://github.com/chenpipi0807/ComfyUI-Index-TTS.git
    ```
 
-2. 安装依赖：
+2. 安装依赖： 安装依赖：
 
    ```bash
    cd ComfyUI-Index-TTS
