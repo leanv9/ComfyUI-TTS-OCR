@@ -81,8 +81,6 @@
 
 ### 2025-04-26
 - 优化英文逗号导致吞字的问题；
-- 如果你是pytorch2.7运行报错，短期无法适配，请尝试降级方案(.\python_embeded\python.exe -m pip install transformers==4.48.3)
-
 
 
 
@@ -178,6 +176,8 @@
 - 如果出现“模型加载失败”，检查模型文件是否完整且放置在正确目录
 - 对于Windows用户，无需额外安装特殊依赖，节点已优化
 - 如果显示CUDA错误，尝试重启ComfyUI或减少`num_beams`值
+- 如果你是pytorch2.7运行报错，短期无法适配，请尝试降级方案(.\python_embeded\python.exe -m pip install transformers==4.48.3)
+
 
 
 ## 鸣谢
