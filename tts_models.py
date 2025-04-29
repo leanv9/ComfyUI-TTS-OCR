@@ -285,19 +285,178 @@ class IndexTTSModel:
             If output_path is provided: output_path
             Otherwise: (sample_rate, audio_data)
         """
-        print(f"[IndexTTS-Model] ==== 开始语音合成 =====")
-        print(f"[IndexTTS-Model] 文本长度: {len(text)}, 语言: {language}, 语速: {speed}")
-        print(f"[IndexTTS-Model] 文本内容: '{text[:100]}{'...' if len(text) > 100 else ''}'")
-        print(f"[IndexTTS-Model] 参考音频类型: {type(reference_audio)}")
-        print(f"[IndexTTS-Model] 输出路径: {output_path if output_path else '无（将返回音频数据）'}")
-        
-        # 确保模型已加载
         if self.model is None:
-            print(f"[IndexTTS-Model] 模型尚未加载，尝试加载...")
+            print("[IndexTTS-Model] 模型未初始化，尝试加载...")
             self._lazy_load_model()
         
-        # 记录开始时间
         infer_start_time = time.time()
+        print(f"[IndexTTS-Model] 开始生成语音... 文本长度: {len(text)}")
+        
+        # 判断是否需要执行中文数字转换的标志
+        skip_chinese_number_conversion = False
+        
+        # 根据language参数处理文本
+        if language == "en":
+            # 英文模式：跳过中文数字转换
+            skip_chinese_number_conversion = True
+            print(f"[IndexTTS-Model] 使用英文模式，将跳过中文数字转换")
+        elif language == "auto":
+            # 自动模式：检查文本中是否主要为英文
+            # 计算英文字符比例
+            english_chars = sum(1 for c in text if ord('a') <= ord(c.lower()) <= ord('z'))
+            chinese_chars = sum(1 for c in text if '\u4e00' <= c <= '\u9fff')
+            total_chars = len(text.strip())
+            
+            if total_chars > 0:
+                english_ratio = english_chars / total_chars
+                chinese_ratio = chinese_chars / total_chars
+                
+                # 如果英文字符占比明显高于中文字符，则使用英文模式
+                if english_ratio > 0.5 and english_ratio > chinese_ratio * 2:
+                    skip_chinese_number_conversion = True
+                    print(f"[IndexTTS-Model] 自动检测到英文文本占比高({english_ratio:.2f})，将跳过中文数字转换")
+        
+        # 在执行预处理前，临时修改模型的预处理逻辑
+        original_preprocess_func = None
+        if skip_chinese_number_conversion and hasattr(self.model, 'preprocess_text'):
+            # 保存原始预处理函数
+            original_preprocess_func = self.model.preprocess_text
+            
+            # 替换为处理英文数字的预处理函数
+            def modified_preprocess(text_input):
+                # 导入必要的模块
+                import re
+                
+                # 英文数字转换函数
+                def num_to_english(num_str):
+                    """将数字字符串转换为英文表示"""
+                    # 单位数字到英文的映射
+                    units = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+                            'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+                            'seventeen', 'eighteen', 'nineteen']
+                    
+                    # 十位数到英文的映射
+                    tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety']
+                    
+                    # 处理0
+                    if num_str == '0':
+                        return 'zero'
+                    
+                    # 将字符串转换为整数
+                    num = int(num_str)
+                    if num == 0:
+                        return 'zero'
+                    
+                    # 处理负数
+                    if num < 0:
+                        return 'negative ' + num_to_english(str(abs(num)))
+                    
+                    # 处理千位及以上
+                    words = []
+                    if num >= 1000000000:  # 十亿
+                        words.append(num_to_english(str(num // 1000000000)) + ' billion')
+                        num %= 1000000000
+                    
+                    if num >= 1000000:  # 百万
+                        words.append(num_to_english(str(num // 1000000)) + ' million')
+                        num %= 1000000
+                        
+                    if num >= 1000:  # 千位
+                        words.append(num_to_english(str(num // 1000)) + ' thousand')
+                        num %= 1000
+                        
+                    if num >= 100:  # 百位
+                        words.append(units[num // 100] + ' hundred')
+                        num %= 100
+                        
+                    if num > 0:
+                        # 添加"and"，如果前面已有词
+                        if words and (num < 100):
+                            words.append('and')
+                            
+                        if num < 20:  # 20以下
+                            words.append(units[num])
+                        else:  # 20-99
+                            word = tens[num // 10]
+                            if num % 10 > 0:  # 如果有个位
+                                word += '-' + units[num % 10]
+                            words.append(word)
+                    
+                    return ' '.join(words)
+                
+                # 处理空格分隔的数字（如"4 0 9 0"）- 每个数字单独转换
+                def process_spaced_digits(text):
+                    # 匹配由空格分隔的数字序列
+                    pattern = re.compile(r'\b(\d(\s+\d)+)\b')
+                    for match in pattern.finditer(text):
+                        spaced_digits = match.group(0)
+                        # 单独处理每个数字
+                        converted = ' '.join(['zero' if d == '0' else num_to_english(d) if d.isdigit() else d for d in spaced_digits.split()])
+                        text = text.replace(spaced_digits, converted)
+                    return text
+                
+                # 处理连续的数字（如"4090"）- 作为一个整体转换
+                def process_consecutive_digits(text):
+                    # 匹配连续的数字
+                    pattern = re.compile(r'\b\d{2,}\b')
+                    for match in pattern.finditer(text):
+                        digits = match.group(0)
+                        # 将整体数字转换为英文
+                        converted = num_to_english(digits)
+                        text = text.replace(digits, converted)
+                    return text
+                
+                # 处理单个数字
+                def process_single_digit(text):
+                    # 匹配单个数字
+                    pattern = re.compile(r'\b\d\b')
+                    for match in pattern.finditer(text):
+                        digit = match.group(0)
+                        # 转换单个数字
+                        converted = 'zero' if digit == '0' else num_to_english(digit)
+                        text = text.replace(digit, converted)
+                    return text
+                
+                # 在英文模式下应用数字处理
+                processed_text = text_input
+                
+                # 首先处理有空格的数字序列
+                processed_text = process_spaced_digits(processed_text)
+                
+                # 然后处理连续的数字
+                processed_text = process_consecutive_digits(processed_text)
+                
+                # 最后处理单个数字
+                processed_text = process_single_digit(processed_text)
+                
+                print(f"[IndexTTS-Model] 英文数字处理: '{text_input}' -> '{processed_text}'")
+                
+                # 应用标准文本处理（不包括中文数字转换）
+                if hasattr(self.model, 'normalizer'):
+                    # 保存原始的use_chinese判断函数
+                    original_use_chinese = self.model.normalizer.use_chinese
+                    
+                    # 强制返回False的函数，确保不执行中文数字转换
+                    def force_english(s):
+                        return False
+                    
+                    # 替换为强制英文模式
+                    self.model.normalizer.use_chinese = force_english
+                    
+                    # 处理文本
+                    normalized_text = self.model.normalizer.infer(processed_text)
+                    
+                    # 恢复原始函数
+                    self.model.normalizer.use_chinese = original_use_chinese
+                    
+                    return normalized_text
+                else:
+                    # 如果没有normalizer，返回处理过的文本
+                    return processed_text
+            
+            # 替换预处理函数
+            self.model.preprocess_text = modified_preprocess
+            print(f"[IndexTTS-Model] 已应用修改后的文本预处理逻辑，不执行中文数字转换")
         
         try:
             # 处理参考音频
@@ -429,5 +588,10 @@ class IndexTTSModel:
             traceback.print_exc()
             raise
         finally:
+            # 恢复原始预处理函数（如果有修改）
+            if original_preprocess_func is not None and hasattr(self.model, 'preprocess_text'):
+                self.model.preprocess_text = original_preprocess_func
+                print(f"[IndexTTS-Model] 已恢复原始文本预处理逻辑")
+            
             infer_end_time = time.time()
             print(f"[IndexTTS-Model] 总耗时: {infer_end_time - infer_start_time:.2f}秒")
