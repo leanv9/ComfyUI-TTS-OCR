@@ -28,12 +28,13 @@
 
 | 参考音频 | 输入文本 | 推理结果 |
 |---------|---------|---------|
-| <video video src=="https://github.com/user-attachments/assets/5e8cb570-242f-4a16-8472-8a64a23183fb"></videovideo> | 我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。  我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。 | <video video src=="https://github.com/user-attachments/assets/d8b89db3-5cf5-406f-b930-fa75d13ff0bd"></videovideo> |
+| <video src="https://github.com/user-attachments/assets/5e8cb570-242f-4a16-8472-8a64a23183fb"></video> | 我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。  我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。 | <video src="https://github.com/user-attachments/assets/d8b89db3-5cf5-406f-b930-fa75d13ff0bd"></video> |
 | <video src="https://github.com/user-attachments/assets/8e774223-e0f7-410b-ae4e-e46215e47e96"></video> | 我想把钉钉的自动回复设置成"服务器繁忙，请稍后再试"，仅对老板可见。 | <video src="https://github.com/user-attachments/assets/6e3e63ed-2d3d-4d5a-bc2e-b42530748fa0"></video> |
 
 - 长文本测试： 长文本测试：
 
-<video video src=="https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b"></videovideo>
+<video src="https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b"></video>
+
 
 
 
