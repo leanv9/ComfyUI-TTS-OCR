@@ -7,3 +7,4 @@ PyYAML>=6.0
 pynini==2.1.5; platform_system!="Windows"
 WeTextProcessing>=1.0.3; platform_system!="Windows"
 modelscope
+transformers==4.48.3
