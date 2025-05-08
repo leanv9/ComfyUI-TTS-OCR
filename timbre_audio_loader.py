@@ -49,8 +49,10 @@ class TimbreAudioLoader:
     @classmethod
     def scan_audio_files(cls, directory):
         """扫描目录下的所有音频文件"""
-        # 支持的音频格式
-        audio_extensions = [".wav", ".mp3", ".ogg", ".flac"]
+        # 支持的音频格式（包括大小写）
+        audio_extensions_lowercase = [".wav", ".mp3", ".ogg", ".flac"]
+        audio_extensions_uppercase = [".WAV", ".MP3", ".OGG", ".FLAC"]
+        audio_extensions = audio_extensions_lowercase + audio_extensions_uppercase
         
         # 清空缓存
         cls.audio_files_cache = ["无音频文件"] # 默认选项，当没有找到文件时显示
