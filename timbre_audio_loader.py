@@ -31,7 +31,7 @@ class TimbreAudioLoader:
     @classmethod
     def INPUT_TYPES(cls):
         # 定义Timbre模型目录路径 - 使用项目内的目录
-        timbre_dir = os.path.join(current_dir, "Timbre model")
+        timbre_dir = os.path.join(current_dir, "TimbreModel")
         
         # 确保目录存在
         os.makedirs(timbre_dir, exist_ok=True)
@@ -86,7 +86,7 @@ class TimbreAudioLoader:
     def load_timbre_audio(self, audio_file, refresh):
         """加载选择的音频文件或刷新列表"""
         # 定义Timbre模型目录路径 - 使用项目内的目录
-        timbre_dir = os.path.join(current_dir, "Timbre model")
+        timbre_dir = os.path.join(current_dir, "TimbreModel")
         
         # 如果用户点击了刷新按钮
         if refresh:
