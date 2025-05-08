@@ -49,29 +49,40 @@ class TimbreAudioLoader:
     @classmethod
     def scan_audio_files(cls, directory):
         """扫描目录下的所有音频文件"""
-        # 支持的音频格式（包括大小写）
-        audio_extensions_lowercase = [".wav", ".mp3", ".ogg", ".flac"]
-        audio_extensions_uppercase = [".WAV", ".MP3", ".OGG", ".FLAC"]
-        audio_extensions = audio_extensions_lowercase + audio_extensions_uppercase
+        # 支持的音频格式模式（Windows不区分大小写）
+        audio_patterns = ["**/*.wav", "**/*.mp3", "**/*.ogg", "**/*.flac"]
         
-        # 清空缓存
-        cls.audio_files_cache = ["无音频文件"] # 默认选项，当没有找到文件时显示
+        # 初始化音频文件缓存
+        cls.audio_files_cache = ["无音频文件"] # 默认选项
         
         # 检查目录是否存在
         if not os.path.exists(directory):
             print(f"[TimbreAudioLoader] 警告: 目录不存在: {directory}")
             return
         
-        # 扫描所有音频文件
+        # 使用集合来确保文件名唯一性
+        unique_filenames = set()
         audio_files = []
-        for ext in audio_extensions:
-            audio_files.extend(glob.glob(os.path.join(directory, f"*{ext}")))
-            audio_files.extend(glob.glob(os.path.join(directory, f"**/*{ext}")))
         
-        # 获取相对于timbre目录的路径
+        # 扫描所有音频文件
+        for pattern in audio_patterns:
+            # 使用递归模式搜索
+            matches = glob.glob(os.path.join(directory, pattern), recursive=True)
+            for file_path in matches:
+                # 提取文件名（不包含路径）
+                file_name = os.path.basename(file_path)
+                # 只添加尚未添加的文件名
+                if file_name.lower() not in unique_filenames:
+                    unique_filenames.add(file_name.lower())
+                    audio_files.append(file_path)
+        
+        # 将收集到的文件添加到缓存
         if audio_files:
-            cls.audio_files_cache = ["无音频文件"]  # 默认选项
-            for file_path in sorted(audio_files):
+            # 按文件名排序
+            audio_files.sort(key=lambda x: os.path.basename(x).lower())
+            
+            # 添加文件名到缓存
+            for file_path in audio_files:
                 file_name = os.path.basename(file_path)
                 cls.audio_files_cache.append(file_name)
             
