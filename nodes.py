@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 import torch
+import random
 import tempfile
 import soundfile as sf
 import time
@@ -30,6 +31,7 @@ class IndexTTSNode:
                 "reference_audio": ("AUDIO", ),
                 "language": (["auto", "zh", "en"], {"default": "auto"}),
                 "speed": ("FLOAT", {"default": 1.0, "min": 0.5, "max": 2.0, "step": 0.1}),
+                "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
             },
             "optional": {
                 "temperature": ("FLOAT", {"default": 1.0, "min": 0.1, "max": 1.5, "step": 0.1}),
@@ -43,8 +45,8 @@ class IndexTTSNode:
             }
         }
     
-    RETURN_TYPES = ("AUDIO",)
-    RETURN_NAMES = ("audio",)
+    RETURN_TYPES = ("AUDIO", "INT",)
+    RETURN_NAMES = ("audio", "seed",)
     FUNCTION = "generate_speech"
     CATEGORY = "audio"
     
@@ -112,7 +114,7 @@ class IndexTTSNode:
                 traceback.print_exc()
                 raise RuntimeError(f"初始化IndexTTS模型失败: {e}")
     
-    def generate_speech(self, text, reference_audio, language="auto", speed=1.0, temperature=1.0, top_p=0.8, top_k=30, repetition_penalty=10.0, length_penalty=0.0, num_beams=3, max_mel_tokens=600, sentence_split="auto"):
+    def generate_speech(self, text, reference_audio, language="auto", speed=1.0, seed=0, temperature=1.0, top_p=0.8, top_k=30, repetition_penalty=10.0, length_penalty=0.0, num_beams=3, max_mel_tokens=600, sentence_split="auto"):
         """
         生成语音的主函数
         
@@ -168,8 +170,25 @@ class IndexTTSNode:
             temp_dir = tempfile.gettempdir()
             temp_output = os.path.join(temp_dir, f"tts_output_{int(time.time())}.wav")
             
-            print(f"[IndexTTS] 开始生成语音，文本长度: {len(text)}，语言: {language}，语速: {speed}")
-            print(f"[IndexTTS] 文本内容: '{text[:100]}{'...' if len(text) > 100 else ''}'")  # 只打印部分文本
+            # 设置随机种子以确保结果可重复性
+            if seed != 0:
+                print(f"[IndexTTS] 设置随机种子: {seed}")
+                # 保存当前随机状态
+                numpy_state = np.random.get_state()
+                torch_state = torch.get_rng_state()
+                python_state = random.getstate()
+                if torch.cuda.is_available():
+                    torch_cuda_state = torch.cuda.get_rng_state()
+                
+                # 设置新的随机种子
+                random.seed(seed)
+                np.random.seed(seed)
+                torch.manual_seed(seed)
+                if torch.cuda.is_available():
+                    torch.cuda.manual_seed_all(seed)
+            
+            print(f"[IndexTTS] 开始生成语音，文本长度: {len(text)}，语言: {language}，语速: {speed}，种子: {seed}")
+            print(f"[IndexTTS] 文本内容: '{text[:100]}{'...' if len(text) > 100 else ''}'")  # 只打印部分文本  # 只打印部分文本
             
             # 记录推理开始时间
             infer_start_time = time.time()
@@ -192,6 +211,15 @@ class IndexTTSNode:
             # 记录推理完成时间
             infer_time = time.time() - infer_start_time
             print(f"[IndexTTS] 语音生成完成，耗时: {infer_time:.2f}秒")
+            
+            # 如果设置了随机种子，恢复之前的随机状态
+            if seed != 0:
+                # 恢复随机状态
+                random.setstate(python_state)
+                np.random.set_state(numpy_state)
+                torch.set_rng_state(torch_state)
+                if torch.cuda.is_available():
+                    torch.cuda.set_rng_state(torch_cuda_state)
             
             # 处理返回结果
             print(f"[IndexTTS] 模型返回结果类型: {type(result)}")
@@ -234,7 +262,7 @@ class IndexTTSNode:
                     "sample_rate": sample_rate
                 }
                 
-                return (audio_dict,)
+                return (audio_dict, seed)
             else:
                 print(f"错误: 意外的返回格式: {type(result)}")
                 raise ValueError(f"TTS模型返回了意外的格式: {type(result)}")
@@ -259,4 +287,4 @@ class IndexTTSNode:
                 "sample_rate": sample_rate
             }
             
-            return (audio_dict,)
+            return (audio_dict, seed)
