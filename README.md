@@ -92,7 +92,9 @@
 
 ![微信截图_20250429112255](https://github.com/user-attachments/assets/a0af9a5b-7609-4c34-adf5-e14321b379a7)
 
-
+### 2025-05-11
+- 增加了seed功能，现在linux也可以重复执行抽卡了
+- 
 
 ## 安装
 
