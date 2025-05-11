@@ -38,12 +38,18 @@ class IndexTTSModel:
         self.abs_model_dir = os.path.abspath(model_dir)
         print(f"[IndexTTS-Model] 模型绝对路径: {self.abs_model_dir}")
         
-        # 检查设备
-        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
-        print(f"[IndexTTS-Model] 使用设备: {self.device}")
-        if self.device.startswith("cuda"):
+        # 检查设备：支持 CUDA 和 Apple Silicon MPS
+        if torch.cuda.is_available():
+            self.device = "cuda:0"
+            print(f"[IndexTTS-Model] 使用设备: {self.device}")
             print(f"[IndexTTS-Model] CUDA可用，显存: {torch.cuda.get_device_properties(0).total_memory / (1024**3):.2f}GB")
             print(f"[IndexTTS-Model] 当前GPU: {torch.cuda.get_device_name(0)}")
+        elif hasattr(torch, 'mps') and torch.mps.is_available():
+            self.device = "mps"
+            print(f"[IndexTTS-Model] 使用设备: {self.device} (Apple Silicon GPU)")
+        else:
+            self.device = "cpu"
+            print(f"[IndexTTS-Model] 使用设备: {self.device} (未检测到支持的GPU)")
         
         self.model = None
         self.cfg_path = os.path.join(self.model_dir, "config.yaml")
@@ -132,6 +138,13 @@ class IndexTTSModel:
             device = self.device
             is_fp16 = False if device == "cpu" else True
             use_cuda_kernel = device.startswith("cuda")
+            
+            # Apple MPS 设备特殊处理
+            if device == "mps":
+                print(f"[IndexTTS-Model] 检测到 Apple Silicon GPU，调整参数配置")
+                # 在 MPS 设备上保持 FP16 开启但禁用 CUDA 内核
+                is_fp16 = True
+                use_cuda_kernel = False
             
             print(f"[IndexTTS-Model] 创建模型实例, 使用设备: {device}, FP16: {is_fp16}, CUDA Kernel: {use_cuda_kernel}")
             
