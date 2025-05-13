@@ -200,8 +200,7 @@
 - 基于原始[IndexTTS](https://github.com/index-tts/index-tts)模型
 - 感谢ComfyUI社区的支持
 - 感谢使用！
-
-**注**：RTF (Real-Time Factor) 是实时因子，值越小表示生成速度越快。例如RTF=0.3表示生成10秒的音频只需要3秒。
+- 
 
 ## 许可证
 
