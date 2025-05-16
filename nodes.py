@@ -29,6 +29,7 @@ class IndexTTSNode:
             "required": {
                 "text": ("STRING", {"multiline": True, "default": "你好，这是一段测试文本。"}),
                 "reference_audio": ("AUDIO", ),
+                "model_version": (["Index-TTS", "IndexTTS-1.5"], {"default": "Index-TTS"}),
                 "language": (["auto", "zh", "en"], {"default": "auto"}),
                 "speed": ("FLOAT", {"default": 1.0, "min": 0.5, "max": 2.0, "step": 0.1}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 2**32 - 1}),
@@ -51,24 +52,56 @@ class IndexTTSNode:
     CATEGORY = "audio"
     
     def __init__(self):
-        self.model_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "models", "Index-TTS")
+        # 根路径
+        self.models_root = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "models")
+        # 可用模型版本
+        self.model_versions = {
+            "Index-TTS": os.path.join(self.models_root, "Index-TTS"),
+            "IndexTTS-1.5": os.path.join(self.models_root, "IndexTTS-1.5")
+        }
+        # 默认使用 Index-TTS 版本
+        self.current_version = "Index-TTS"
+        self.model_dir = self.model_versions[self.current_version]
         self.tts_model = None
-        print(f"[IndexTTS] 初始化节点，模型目录设置为: {self.model_dir}")
+        
+        print(f"[IndexTTS] 初始化节点，可用模型版本: {list(self.model_versions.keys())}")
+        print(f"[IndexTTS] 默认模型目录: {self.model_dir}")
         
         # 检查模型目录是否存在
-        if not os.path.exists(self.model_dir):
-            print(f"[IndexTTS] 警告: 模型目录不存在: {self.model_dir}")
-            os.makedirs(self.model_dir, exist_ok=True)
-            print(f"[IndexTTS] 已创建模型目录: {self.model_dir}")
-        else:
-            # 检查模型文件
-            model_files = os.listdir(self.model_dir)
-            print(f"[IndexTTS] 模型目录内容: {model_files}")
+        for version, directory in self.model_versions.items():
+            if os.path.exists(directory):
+                model_files = os.listdir(directory)
+                print(f"[IndexTTS] 模型 {version} 目录内容: {len(model_files)} 个文件")
+            else:
+                print(f"[IndexTTS] 警告: 模型 {version} 目录不存在: {directory}")
     
-    def _init_model(self):
-        """初始化TTS模型（延迟加载）"""
-        if self.tts_model is None:
-            print(f"[IndexTTS] 开始加载模型...")
+    def _init_model(self, model_version="Index-TTS"):
+        """初始化TTS模型（延迟加载）
+        
+        Args:
+            model_version: 模型版本，默认为 "Index-TTS"
+        """
+        # 如果版本发生变化或模型未加载，重新加载模型
+        if self.tts_model is None or self.current_version != model_version:
+            # 更新当前版本和模型目录
+            if model_version in self.model_versions:
+                self.current_version = model_version
+                self.model_dir = self.model_versions[model_version]
+                print(f"[IndexTTS] 切换到模型版本: {model_version}, 目录: {self.model_dir}")
+            else:
+                print(f"[IndexTTS] 警告: 未知模型版本 {model_version}，使用默认版本 {self.current_version}")
+            
+            # 如果已有模型，先释放资源
+            if self.tts_model is not None:
+                print(f"[IndexTTS] 卸载现有模型...")
+                self.tts_model = None
+                # 强制垃圾回收
+                import gc
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+            
+            print(f"[IndexTTS] 开始加载模型版本: {self.current_version}...")
             # 检查必要的模型文件
             required_files = ["gpt.pth", "config.yaml"]
             missing_files = []
@@ -81,7 +114,7 @@ class IndexTTSNode:
                     print(f"[IndexTTS] 找到模型文件: {file} ({file_size:.2f}MB)")
             
             if missing_files:
-                error_msg = f"缺少必要的模型文件: {', '.join(missing_files)}"
+                error_msg = f"模型 {self.current_version} 缺少必要的文件: {', '.join(missing_files)}"
                 print(f"[IndexTTS] 错误: {error_msg}")
                 raise FileNotFoundError(error_msg)
                 
@@ -94,7 +127,7 @@ class IndexTTSNode:
                 
                 # 记录加载完成时间
                 load_time = time.time() - start_time
-                print(f"[IndexTTS] 模型已成功加载，耗时: {load_time:.2f}秒")
+                print(f"[IndexTTS] 模型 {self.current_version} 已成功加载，耗时: {load_time:.2f}秒")
                 
                 # 输出模型基本信息
                 if hasattr(self.tts_model, 'config'):
@@ -109,12 +142,12 @@ class IndexTTSNode:
                 
             except Exception as e:
                 import traceback
-                print(f"[IndexTTS] 初始化模型失败: {e}")
+                print(f"[IndexTTS] 初始化模型 {self.current_version} 失败: {e}")
                 print(f"[IndexTTS] 错误详情:")
                 traceback.print_exc()
-                raise RuntimeError(f"初始化IndexTTS模型失败: {e}")
+                raise RuntimeError(f"初始化IndexTTS模型 {self.current_version} 失败: {e}")
     
-    def generate_speech(self, text, reference_audio, language="auto", speed=1.0, seed=0, temperature=1.0, top_p=0.8, top_k=30, repetition_penalty=10.0, length_penalty=0.0, num_beams=3, max_mel_tokens=600, sentence_split="auto"):
+    def generate_speech(self, text, reference_audio, model_version="Index-TTS", language="auto", speed=1.0, seed=0, temperature=1.0, top_p=0.8, top_k=30, repetition_penalty=10.0, length_penalty=0.0, num_beams=3, max_mel_tokens=600, sentence_split="auto"):
         """
         生成语音的主函数
         
@@ -128,9 +161,9 @@ class IndexTTSNode:
             audio: 生成的音频元组 (audio_data, sample_rate)
         """
         try:
-            # 延迟加载模型
-            if self.tts_model is None:
-                self._init_model()
+            # 延迟加载模型或切换模型版本
+            if self.tts_model is None or model_version != self.current_version:
+                self._init_model(model_version=model_version)
             
             # 处理ComfyUI的音频格式
             processed_audio = None
@@ -187,7 +220,7 @@ class IndexTTSNode:
                 if torch.cuda.is_available():
                     torch.cuda.manual_seed_all(seed)
             
-            print(f"[IndexTTS] 开始生成语音，文本长度: {len(text)}，语言: {language}，语速: {speed}，种子: {seed}")
+            print(f"[IndexTTS] 开始生成语音，使用模型: {model_version}，文本长度: {len(text)}，语言: {language}，语速: {speed}，种子: {seed}")
             print(f"[IndexTTS] 文本内容: '{text[:100]}{'...' if len(text) > 100 else ''}'")  # 只打印部分文本  # 只打印部分文本
             
             # 记录推理开始时间
@@ -202,7 +235,14 @@ class IndexTTSNode:
                     text=text, 
                     output_path=None,  # 不保存文件，直接返回数据
                     language=language,
-                    speed=speed
+                    speed=speed,
+                    temperature=temperature,
+                    top_p=top_p,
+                    top_k=top_k,
+                    repetition_penalty=repetition_penalty,
+                    length_penalty=length_penalty,
+                    num_beams=num_beams,
+                    max_mel_tokens=max_mel_tokens
                 )
             except Exception as e:
                 print(f"[IndexTTS] 调用模型失败: {e}")
