@@ -40,6 +40,16 @@
 
 ## 更新日志
 
+### 2025-05-16
+
+- 新增对**IndexTTS-1.5**模型的支持
+  - 现在可以在UI中通过下拉菜单切换不同版本的模型
+  - 支持原始的Index-TTS和新的IndexTTS-1.5模型
+  - 切换模型时会自动加载相应版本，无需重启ComfyUI
+ 
+  ![微信截图_20250516182957](https://github.com/user-attachments/assets/ce13f02c-9834-43b8-82e9-5567bb226280)
+
+
 ### 2025-04-23
 
 ![微信截图_20250423175608](https://github.com/user-attachments/assets/f2b15d8a-3453-4c88-b609-167b372aab74)
@@ -119,6 +129,8 @@
 
 ### 下载模型
 
+#### 原始版本 (Index-TTS)
+
 1. 从[Hugging Face](https://huggingface.co/IndexTeam/Index-TTS/tree/main)或者[魔搭](https://modelscope.cn/models/IndexTeam/Index-TTS)下载IndexTTS模型文件
 2. 将模型文件放置在`ComfyUI/models/Index-TTS`目录中（如果目录不存在，请创建）
 3. 模型文件夹结构：
@@ -139,6 +151,26 @@
    
    确保所有文件都已完整下载，特别是较大的模型文件如`bigvgan_discriminator.pth`(1.6GB)和`gpt.pth`(696MB)。
 
+#### 新版本 (IndexTTS-1.5)
+
+1. 从[Hugging Face](https://huggingface.co/IndexTeam/IndexTTS-1.5/tree/main)下载IndexTTS-1.5模型文件
+2. 将模型文件放置在`ComfyUI/models/IndexTTS-1.5`目录中（如果目录不存在，请创建）
+3. 模型文件夹结构与Index-TTS基本相同，但文件大小和内容会有所不同：
+   
+   ```
+   ComfyUI/models/IndexTTS-1.5/
+   ├── .gitattributes
+   ├── bigvgan_discriminator.pth
+   ├── bigvgan_generator.pth
+   ├── bpe.model
+   ├── config.yaml
+   ├── configuration.json
+   ├── dvae.pth
+   ├── gpt.pth
+   ├── README.md
+   └── unigram_12000.vocab
+   ```
+
 ## 使用方法
 
 1. 在ComfyUI中，找到并添加`Index TTS`节点
@@ -157,6 +189,9 @@
 
 - **text**: 要转换为语音的文本（支持中英文）
 - **reference_audio**: 参考音频，模型会复刻其声音特征
+- **model_version**: 模型版本选择，可选项：
+  - `Index-TTS`: 原始模型版本（默认）
+  - `IndexTTS-1.5`: 新版本模型
 - **language**: 文本语言选择，可选项：
   - `auto`: 自动检测语言（默认）
   - `zh`: 强制使用中文模式
