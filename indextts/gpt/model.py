@@ -1,4 +1,6 @@
 import functools
+import os
+import time
 
 import torch
 import torch.nn as nn
@@ -12,6 +14,9 @@ from indextts.gpt.conformer_encoder import ConformerEncoder
 from indextts.gpt.perceiver import PerceiverResampler
 from indextts.utils.arch_util import AttentionBlock
 from indextts.utils.typical_sampling import TypicalLogitsWarper
+
+# 添加全局标志，用于跟踪是否需要使用替代生成方法
+_USE_ALTERNATIVE_GENERATION = False
 
 
 def null_position_embeddings(range, dim):
@@ -619,30 +624,76 @@ class UnifiedVoice(nn.Module):
         logits_processor = LogitsProcessorList([TypicalLogitsWarper(mass=typical_mass)]) if typical_sampling else LogitsProcessorList()
         max_length = trunc_index + self.max_mel_tokens - 1 if max_generate_length is None else trunc_index + max_generate_length
         
-        # 修补：为新版transformers (4.50+) 添加一个解决方法，解决tensor reshape问题
-        try:
+        # 使用全局标志来决定是否使用替代生成方法
+        global _USE_ALTERNATIVE_GENERATION
+        
+        # 准备生成参数
+        generate_kwargs = {
+            "bos_token_id": self.start_mel_token,
+            "pad_token_id": self.stop_mel_token,
+            "eos_token_id": self.stop_mel_token,
+            "max_length": max_length,
+            "logits_processor": logits_processor,
+            "num_return_sequences": num_return_sequences,
+        }
+        
+        # 合并用户提供的参数
+        generate_kwargs.update(hf_generate_kwargs)
+        
+        # 如果之前已经确定需要使用替代方法，就直接使用
+        if _USE_ALTERNATIVE_GENERATION:
+            alt_params = {
+                "do_sample": True,   # 使用采样而不是beam search
+                "num_beams": 1,      # 设置为1，实际上禁用beam search
+                "temperature": 1.0,   # 使用温度为1.0的采样
+                "top_k": 30,         # 仍然可以使用top_k过滤
+                "top_p": 0.9,        # 和top_p过滤
+            }
+            # 移除可能冲突的参数
+            for k in alt_params:
+                if k in generate_kwargs:
+                    del generate_kwargs[k]
+            # 添加替代参数
+            generate_kwargs.update(alt_params)
+            
+            # 静默生成，不输出重复日志
+            gen = self.inference_model.generate(inputs, **generate_kwargs)
+        else:
             # 尝试正常生成
-            gen = self.inference_model.generate(inputs, bos_token_id=self.start_mel_token, pad_token_id=self.stop_mel_token,
-                                                eos_token_id=self.stop_mel_token,
-                                                max_length=max_length, logits_processor=logits_processor,
-                                                num_return_sequences=num_return_sequences, **hf_generate_kwargs)
-        except RuntimeError as e:
-            if "shape" in str(e) and "invalid for input of size" in str(e):
-                print(f">> 检测到transformers reshape错误，尝试使用替代生成方法")
-                # 替代方法：使用sample而不是beam search
-                # 这实际上是一个回退机制，因为在更新的transformers版本中，beam search的实现发生了变化
-                gen = self.inference_model.generate(inputs, bos_token_id=self.start_mel_token, pad_token_id=self.stop_mel_token,
-                                                eos_token_id=self.stop_mel_token,
-                                                max_length=max_length, logits_processor=logits_processor,
-                                                num_return_sequences=num_return_sequences,
-                                                do_sample=True,  # 使用采样而不是beam search
-                                                num_beams=1,     # 设置为1，实际上禁用beam search
-                                                temperature=1.0, # 使用温度为1.0的采样
-                                                top_k=30,        # 仍然可以使用top_k过滤
-                                                top_p=0.9,       # 和top_p过滤
-                                                **{k: v for k, v in hf_generate_kwargs.items() if k not in ['num_beams', 'do_sample', 'temperature', 'top_k', 'top_p']})
-            else:
-                # 如果是其他错误，则重新抛出
-                raise
+            try:
+                gen_start_time = time.time()
+                gen = self.inference_model.generate(inputs, **generate_kwargs)
+                gen_time = time.time() - gen_start_time
+                print(f">> 使用标准生成方法完成，耗时: {gen_time:.2f}秒")
+            except RuntimeError as e:
+                if "shape" in str(e) and "invalid for input of size" in str(e):
+                    error_details = str(e)
+                    print(f">> 检测到transformers reshape错误: {error_details}")
+                    print(f">> 切换到替代生成方法，并将此设置为全局默认值")
+                    
+                    # 设置全局标志，以便后续调用都使用替代方法
+                    _USE_ALTERNATIVE_GENERATION = True
+                    
+                    # 替代方法：使用sample而不是beam search
+                    alt_params = {
+                        "do_sample": True,   # 使用采样而不是beam search
+                        "num_beams": 1,      # 设置为1，实际上禁用beam search
+                        "temperature": 1.0,   # 使用温度为1.0的采样
+                        "top_k": 30,         # 仍然可以使用top_k过滤
+                        "top_p": 0.9,        # 和top_p过滤
+                    }
+                    # 移除可能冲突的参数
+                    for k in alt_params:
+                        if k in generate_kwargs:
+                            del generate_kwargs[k]
+                    # 添加替代参数
+                    generate_kwargs.update(alt_params)
+                    
+                    # 第一次使用替代方法时输出日志，之后将静默处理
+                    gen = self.inference_model.generate(inputs, **generate_kwargs)
+                else:
+                    # 如果是其他错误，则重新抛出
+                    print(f">> 遇到未知错误: {str(e)}")
+                    raise
                 
         return gen[:, trunc_index:]
