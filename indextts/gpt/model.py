@@ -618,8 +618,31 @@ class UnifiedVoice(nn.Module):
 
         logits_processor = LogitsProcessorList([TypicalLogitsWarper(mass=typical_mass)]) if typical_sampling else LogitsProcessorList()
         max_length = trunc_index + self.max_mel_tokens - 1 if max_generate_length is None else trunc_index + max_generate_length
-        gen = self.inference_model.generate(inputs, bos_token_id=self.start_mel_token, pad_token_id=self.stop_mel_token,
-                                            eos_token_id=self.stop_mel_token,
-                                            max_length=max_length, logits_processor=logits_processor,
-                                            num_return_sequences=num_return_sequences, **hf_generate_kwargs)
+        
+        # 修补：为新版transformers (4.50+) 添加一个解决方法，解决tensor reshape问题
+        try:
+            # 尝试正常生成
+            gen = self.inference_model.generate(inputs, bos_token_id=self.start_mel_token, pad_token_id=self.stop_mel_token,
+                                                eos_token_id=self.stop_mel_token,
+                                                max_length=max_length, logits_processor=logits_processor,
+                                                num_return_sequences=num_return_sequences, **hf_generate_kwargs)
+        except RuntimeError as e:
+            if "shape" in str(e) and "invalid for input of size" in str(e):
+                print(f">> 检测到transformers reshape错误，尝试使用替代生成方法")
+                # 替代方法：使用sample而不是beam search
+                # 这实际上是一个回退机制，因为在更新的transformers版本中，beam search的实现发生了变化
+                gen = self.inference_model.generate(inputs, bos_token_id=self.start_mel_token, pad_token_id=self.stop_mel_token,
+                                                eos_token_id=self.stop_mel_token,
+                                                max_length=max_length, logits_processor=logits_processor,
+                                                num_return_sequences=num_return_sequences,
+                                                do_sample=True,  # 使用采样而不是beam search
+                                                num_beams=1,     # 设置为1，实际上禁用beam search
+                                                temperature=1.0, # 使用温度为1.0的采样
+                                                top_k=30,        # 仍然可以使用top_k过滤
+                                                top_p=0.9,       # 和top_p过滤
+                                                **{k: v for k, v in hf_generate_kwargs.items() if k not in ['num_beams', 'do_sample', 'temperature', 'top_k', 'top_p']})
+            else:
+                # 如果是其他错误，则重新抛出
+                raise
+                
         return gen[:, trunc_index:]
