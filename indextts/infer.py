@@ -568,7 +568,13 @@ class IndexTTS:
         gpt_forward_time = 0
         bigvgan_time = 0
 
-        for sent in sentences:
+        print(f"\n>> 开始生成音频，共 {len(sentences)} 个句子")
+        
+        for i, sent in enumerate(sentences):
+            sentence_desc = f"[{i+1}/{len(sentences)}] 处理句子: {sent[:30]}{'...' if len(sent) > 30 else ''}"
+            print(f">> {sentence_desc}")
+            self._set_gr_progress(0.5 + 0.5 * i / len(sentences), f"生成句子 {i+1}/{len(sentences)}")
+            
             # sent = " ".join([char for char in sent.upper()]) if lang == "ZH" else sent.upper()
             cleand_text = tokenize_by_CJK_char(sent)
             # cleand_text = "他 那 像 HONG3 小 孩 似 的 话 , 引 得 人 们 HONG1 堂 大 笑 , 大 家 听 了 一 HONG3 而 散 ."
@@ -638,10 +644,15 @@ class IndexTTS:
                     wav = wav.squeeze(1)
 
                 wav = torch.clamp(32767 * wav, -32767.0, 32767.0)
-                print(f"wav shape: {wav.shape}", "min:", wav.min(), "max:", wav.max())
+                # 只在详细模式下打印wav shape信息，避免重复输出
+                if verbose:
+                    print(f"wav shape: {wav.shape}", "min:", wav.min(), "max:", wav.max())
                 # wavs.append(wav[:, :-512])
                 wavs.append(wav)
         end_time = time.perf_counter()
+        
+        # 进度完成指示
+        print(f">> 音频生成完成！")
 
         # 处理可能的空列表问题
         if len(wavs) == 0:
