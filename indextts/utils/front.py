@@ -48,6 +48,30 @@ class TextNormalizer:
             ":": ",",
         }
 
+        # 新增：初始化时加载全角转半角的转换函数
+        self._fullwidth_replacer = self._create_fullwidth_replacer()
+
+    def _create_fullwidth_replacer(self):
+        """
+        创建一个闭包函数，用于将全角字符转换为半角
+        支持数字、大小写字母
+        """
+        def replace_char(c):
+            code = ord(c)
+            if 0xFF10 <= code <= 0xFF19:  # 全角数字
+                return chr(code - 0xFEE0)
+            elif 0xFF21 <= code <= 0xFF3A:  # 全角大写字母 A-Z
+                return chr(code - 0xFEE0)
+            elif 0xFF41 <= code <= 0xFF5A:  # 全角小写字母 a-z
+                return chr(code - 0xFEE0)
+            else:
+                return c
+
+        def fullwidth_to_halfwidth(text):
+            return ''.join(replace_char(c) for c in text)
+
+        return fullwidth_to_halfwidth
+
     def match_email(self, email):
         # 正则表达式匹配邮箱格式：数字英文@数字英文.英文
         pattern = r'^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+$'
@@ -366,7 +390,11 @@ class TextNormalizer:
         if not self.zh_normalizer or not self.en_normalizer:
             print("Error, text normalizer is not initialized !!!")
             return ""
-        replaced_text, pinyin_list = self.save_pinyin_tones(text.rstrip())
+        # 在 infer 前进行全角字符处理
+        processed_text = self._fullwidth_replacer(text.rstrip())        
+
+        #replaced_text, pinyin_list = self.save_pinyin_tones(text.rstrip())
+        replaced_text, pinyin_list = self.save_pinyin_tones(processed_text)
 
         try:
             # 为了调试直接点出输入的文本
