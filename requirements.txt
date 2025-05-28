@@ -4,6 +4,6 @@ scipy>=1.7.0
 librosa>=0.10.0
 soundfile>=0.10.0
 PyYAML>=6.0
-pynini==2.1.5; platform_system!="Windows"
+pynini==2.1.6; platform_system!="Windows"
 WeTextProcessing>=1.0.3; platform_system!="Windows"
 omegaconf>=2.3.0
