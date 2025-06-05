@@ -37,6 +37,9 @@
 
 <video src="https://github.com/user-attachments/assets/6bfa35dc-1a30-4da0-a4dc-ac3def25452b"></video>
 
+- 多角色小说测试： 多角色小说测试：
+
+<video src="https://github.com/user-attachments/assets/6d4737f4-9d75-431e-bb11-fe3e86a4ab0e"></video>
 
 
 
@@ -92,9 +95,10 @@
 ### 示例用法
 
 1. 将小说文本输入到 Novel Text Structure 节点
-2. 连接输出到 Multi-Voice TTS 节点
-3. 设置不同角色的语音模型
+2. 连接输出到 Index TTS Pro 节点
+3. 设置不同角色的语音
 4. 运行工作流生成多声音小说朗读
+5. 实在不会看我最新增加的工作流
 
 
 ### 2025-05-18
