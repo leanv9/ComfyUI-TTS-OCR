@@ -112,6 +112,60 @@
 - 增加了seed功能，现在linux也可以重复执行抽卡了
 - 增加了对 Apple Silicon MPS 设备的检测（仍需测试反馈~）
 
+### 2025-06-05
+
+- 改进了小说文本解析器（Novel Text Parser）的功能
+  - 增加了对预格式化文本的检测和处理
+  - 优化了对话检测和角色识别算法
+  - 改进了中文角色名称的识别
+  - 支持引号中的对话自动识别
+
+## 多角色小说文本解析
+
+本项目包含一个专门用于解析小说文本的节点（Novel Text Structure Node），可以将普通小说文本解析为多角色对话结构，以便生成更加自然的多声音TTS效果。
+
+### 使用说明
+
+- 节点会尝试自动识别小说中的角色对话和旁白部分
+- 对话部分会标记为`<CharacterX>`形式（X为数字，最多支持5个角色）
+- 旁白部分会标记为`<Narrator>`
+- 解析后的文本可直接用于多声音TTS生成
+
+### 局限性
+
+- 当前解析算法并不完美，复杂的小说结构可能导致错误的角色识别
+- 对于重要文本，建议使用LLM（如GPT等）手动拆分文本为以下格式：
+
+```
+<Narrator>少女此时就站在院墙那边，她有一双杏眼，怯怯弱弱。</Narrator>
+<Narrator>院门那边，有个嗓音说：</Narrator>
+<Character1>"你这婢女卖不卖？"</Character1>
+<Narrator>宋集薪愣了愣，循着声音转头望去，是个眉眼含笑的锦衣少年，站在院外，一张全然陌生的面孔。</Narrator>
+<Narrator>锦衣少年身边站着一位身材高大的老者，面容白皙，脸色和蔼，轻轻眯眼打量着两座毗邻院落的少年少女。</Narrator>
+<Narrator>老者的视线在陈平安一扫而过，并无停滞，但是在宋集薪和婢女身上，多有停留，笑意渐渐浓郁。</Narrator>
+<Narrator>宋集薪斜眼道：</Narrator>
+<Character2>"卖！怎么不卖！"</Character2>
+<Narrator>那少年微笑道：</Narrator>
+<Character1>"那你说个价。"</Character1>
+<Narrator>少女瞪大眼眸，满脸匪夷所思，像一头惊慌失措的年幼麋鹿。</Narrator>
+<Narrator>宋集薪翻了个白眼，伸出一根手指，晃了晃，</Narrator>
+<Character2>"白银一万两！"</Character2>
+<Narrator>锦衣少年脸色如常，点头道：</Narrator>
+<Character1>"好。"</Character1>
+<Narrator>宋集薪见那少年不像是开玩笑的样子，连忙改口道：</Narrator>
+<Character2>"是黄金万两！"</Character2>
+<Narrator>锦衣少年嘴角翘起，道：</Narrator>
+<Character1>"逗你玩的。"</Character1>
+<Narrator>宋集薪脸色阴沉。</Narrator>
+```
+
+### 示例用法
+
+1. 将小说文本输入到 Novel Text Structure 节点
+2. 连接输出到 Multi-Voice TTS 节点
+3. 设置不同角色的语音模型
+4. 运行工作流生成多声音小说朗读
+
 
 ## 安装
 

@@ -15,19 +15,25 @@ if current_dir not in sys.path:
 # 导入节点定义
 from .nodes import IndexTTSNode
 from .audio_enhancement import AudioCleanupNode
-from .timbre_audio_loader import TimbreAudioLoader  # 导入新节点
+from .timbre_audio_loader import TimbreAudioLoader
+from .novel_text_parser import NovelTextStructureNode  # 导入小说文本结构化节点
+from .index_tts_pro import IndexTTSProNode  # 导入增强版TTS节点
 
 # 注册ComfyUI节点
 NODE_CLASS_MAPPINGS = {
     "IndexTTSNode": IndexTTSNode,
     "AudioCleanupNode": AudioCleanupNode,
-    "TimbreAudioLoader": TimbreAudioLoader,        # 添加新节点
+    "TimbreAudioLoader": TimbreAudioLoader,
+    "NovelTextStructureNode": NovelTextStructureNode,  # 添加小说文本结构化节点
+    "IndexTTSProNode": IndexTTSProNode,             # 添加增强版TTS节点
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "IndexTTSNode": "Index TTS",
     "AudioCleanupNode": "Audio Cleaner",
-    "TimbreAudioLoader": "Timbre音频加载器",     # 添加新节点显示名称
+    "TimbreAudioLoader": "Timbre音频加载器",
+    "NovelTextStructureNode": "小说文本结构化",   # 添加小说文本结构化节点显示名称
+    "IndexTTSProNode": "Index TTS Pro",         # 添加增强版TTS节点显示名称
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
