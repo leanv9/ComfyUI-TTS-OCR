@@ -99,6 +99,7 @@
 3. 设置不同角色的语音
 4. 运行工作流生成多声音小说朗读
 5. 实在不会看我最新增加的工作流
+6. 如果你想在comfyui中一站式完成这个，我推荐你使用各类的llm节点，比如kimichat(https://github.com/chenpipi0807/PIP_KIMI2comfyui)
 
 
 ### 2025-05-18
