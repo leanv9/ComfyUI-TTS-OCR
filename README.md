@@ -31,6 +31,7 @@
 - 生成的很快，真的很快！而且竟然也很像！！！
 - 效果很好，感谢小破站的开源哈哈哈哈哈 
 - 如果你想体验一下效果 附赠道友B站的传送阵[demo](https://huggingface.co/spaces/IndexTeam/IndexTTS)
+- 如果你不知道去哪找音频，那我建议你去[隔壁](https://drive.google.com/drive/folders/1AyB3egmr0hAKp0CScI0eXJaUdVccArGB)偷哈哈哈哈哈
 
 ## 演示案例
 
