@@ -54,6 +54,13 @@
 
 ## 更新日志
 
+### 2025-06-24
+
+- pro节点新增了对于字幕的json输出，感谢@qy8502提供的玩法思路
+
+![image](https://github.com/user-attachments/assets/e7f5e92a-7f76-48a1-ba01-86143d10d359)
+
+
 ### 2025-06-05
 
 - 改进了小说文本解析器（Novel Text Parser）的功能
