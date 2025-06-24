@@ -6,7 +6,9 @@ import tempfile
 import soundfile as sf
 import time
 import re
+import json
 from pathlib import Path
+import random
 
 # 确保当前目录在导入路径中
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -49,8 +51,8 @@ class IndexTTSProNode:
             }
         }
     
-    RETURN_TYPES = ("AUDIO", "INT",)
-    RETURN_NAMES = ("audio", "seed",)
+    RETURN_TYPES = ("AUDIO", "INT", "STRING",)
+    RETURN_NAMES = ("audio", "seed", "Subtitle",)
     FUNCTION = "generate_multi_voice_speech"
     CATEGORY = "audio"
     
@@ -262,6 +264,20 @@ class IndexTTSProNode:
             print(f"[IndexTTS Pro] No valid segments found, returning None")
             return None
     
+    def _seconds_to_time_format(self, seconds):
+        """将秒数转换为分:秒格式
+        
+        Args:
+            seconds: 秒数(float)
+            
+        Returns:
+            str: 格式化的时间字符串，如 "1:23"
+        """
+        total_seconds = int(seconds)
+        minutes = total_seconds // 60
+        remaining_seconds = total_seconds % 60
+        return f"{minutes}:{remaining_seconds:02d}"
+    
     def generate_multi_voice_speech(self, structured_text, narrator_audio, model_version="Index-TTS", 
                                    language="auto", speed=1.0, seed=0, 
                                    character1_audio=None, character2_audio=None, character3_audio=None, 
@@ -275,59 +291,61 @@ class IndexTTSProNode:
         参数:
             structured_text: 结构化文本，包含角色标签
             narrator_audio: 旁白/正文的参考音频
-            character1_audio~character5_audio: 角色1-5的参考音频
-            language: 文本语言 (auto, zh, en)
-            speed: 语速因子
-            
-        返回:
-            audio: 生成的音频元组 (audio_data, sample_rate)
+            model_version: 模型版本
+            language: 语言设置
+            speed: 语音速度
+            seed: 随机种子
+            character1_audio~character5_audio: 角色参考音频
+            temperature: 温度参数
+            top_p: top_p参数
+            top_k: top_k参数
+            repetition_penalty: 重复惩罚
+            length_penalty: 长度惩罚
+            num_beams: beam数量
+            max_mel_tokens: 最大mel token数
         """
         try:
-            # 延迟加载模型
-            if self.tts_model is None or model_version != self.current_version:
-                self._init_model(model_version=model_version)
+            print(f"[IndexTTS Pro] Starting multi-voice generation with structured_text: {structured_text[:100]}...")
             
-            print(f"[IndexTTS Pro] 开始生成多角色语音...")
+            # 使用固定种子或随机种子
+            if seed == 0:
+                seed = int(time.time() * 1000) % (2**32 - 1)
+            
+            # 初始化模型
+            self._init_model(model_version)
             
             # 解析结构化文本
-            text_segments = self._parse_structured_text(structured_text)
-            print(f"[IndexTTS Pro] 解析文本片段数: {len(text_segments)}")
-            
-            # 处理所有参考音频
-            narrator_audio = self._process_audio_input(narrator_audio)
+            parsed_text = self._parse_structured_text(structured_text)
+            print(f"[IndexTTS Pro] Parsed text segments: {len(parsed_text)}")
             
             # 构建角色音频映射
-            character_audio_map = {
-                "Narrator": narrator_audio,
-                "Character1": self._process_audio_input(character1_audio) if character1_audio else narrator_audio,
-                "Character2": self._process_audio_input(character2_audio) if character2_audio else None,
-                "Character3": self._process_audio_input(character3_audio) if character3_audio else None,
-                "Character4": self._process_audio_input(character4_audio) if character4_audio else None,
-                "Character5": self._process_audio_input(character5_audio) if character5_audio else None,
-            }
+            character_audios = {}
+            for i, char_audio in enumerate([character1_audio, character2_audio, character3_audio, character4_audio, character5_audio], 1):
+                if char_audio is not None:
+                    character_audios[f"Character{i}"] = char_audio
             
-            # 根据角色生成音频片段
+            # 生成音频片段
             audio_segments = []
+            current_time = 0.0  # 当前时间位置
+            subtitle_data = []  # Subtitle数据列表
             
-            # 设置随机种子
-            if seed == 0:
-                seed = random.randint(1, 2**32 - 1)
-                print(f"[IndexTTS Pro] Using random seed: {seed}")
+            for role, text in parsed_text:
+                print(f"[IndexTTS Pro] Processing: {role} - {text[:50]}...")
                 
-            # 遍历文本段落生成音频
-            for role, text in text_segments:
-                # 如果该角色没有参考音频，使用旁白音频
-                ref_audio = character_audio_map.get(role, narrator_audio)
-                if ref_audio is None:
-                    print(f"[IndexTTS Pro] Character {role} has no reference audio, using narrator audio")
+                # 选择参考音频
+                if role == "Narrator":
                     ref_audio = narrator_audio
+                elif role in character_audios:
+                    ref_audio = character_audios[role]
+                else:
+                    # 使用旁白音频作为默认参考
+                    ref_audio = narrator_audio
+                    print(f"[IndexTTS Pro] Warning: No specific audio for {role}, using narrator audio")
                 
-                print(f"[IndexTTS Pro] Generating {role} voice: '{text[:20]}...' (length {len(text)})")
-                
-                # 调用TTS模型生成音频
                 try:
+                    # 生成音频
                     result = self.tts_model.infer(
-                        reference_audio=ref_audio,  # 直接传入参考音频数据
+                        reference_audio=self._process_audio_input(ref_audio),  # 直接传入参考音频数据
                         text=text,
                         output_path=None,  # 不保存文件，直接返回音频数据
                         language=language,
@@ -342,40 +360,57 @@ class IndexTTSProNode:
                         max_mel_tokens=max_mel_tokens
                     )
                     
-                    # 调试输出生成的音频数据信息
-                    print(f"[IndexTTS Pro] TTS model returned result type: {type(result)}")
-                    
-                    # 解析返回形式，确定音频数据和采样率
+                    # 处理返回结果
                     if isinstance(result, tuple) and len(result) == 2:
-                        # 检查哪个是音频数据，哪个是采样率
-                        if isinstance(result[0], np.ndarray) and isinstance(result[1], int):
-                            audio_data, audio_sr = result
-                            print(f"[IndexTTS Pro] Standard format: (audio_data, sample_rate)")
-                        elif isinstance(result[0], int) and isinstance(result[1], np.ndarray):
-                            # 返回的顺序与预期不同，需要循序
-                            audio_sr, audio_data = result
-                            print(f"[IndexTTS Pro] Reversed format: (sample_rate, audio_data)")
-                        else:
-                            audio_data, audio_sr = None, None
-                            print(f"[IndexTTS Pro] Unknown format: {result}")
+                        # 返回格式: (sample_rate, audio_data)
+                        sample_rate, audio_data = result
                         
                         print(f"[IndexTTS Pro] Audio data type: {type(audio_data)}")
                         if hasattr(audio_data, 'shape'):
                             print(f"[IndexTTS Pro] Audio data shape: {audio_data.shape}")
                         
-                        print(f"[IndexTTS Pro] Sample rate: {audio_sr}, type: {type(audio_sr)}")
+                        print(f"[IndexTTS Pro] Sample rate: {sample_rate}, type: {type(sample_rate)}")
                         
-                        # 添加到段落列表
-                        if audio_data is not None and isinstance(audio_data, np.ndarray) \
-                                and isinstance(audio_sr, int) and audio_sr > 0:
-                            audio_segments.append((audio_data, audio_sr))
+                        # 计算音频长度
+                        if isinstance(audio_data, np.ndarray) and audio_data.size > 0:
+                            if audio_data.ndim == 1:
+                                audio_length = len(audio_data) / sample_rate
+                            else:
+                                audio_length = audio_data.shape[-1] / sample_rate
+                            
+                            # 添加字幕数据
+                            start_time = self._seconds_to_time_format(current_time)
+                            end_time = self._seconds_to_time_format(current_time + audio_length)
+                            subtitle_item = {
+                                "id": role,
+                                "字幕": text,
+                                "start": start_time,
+                                "end": end_time
+                            }
+                            subtitle_data.append(subtitle_item)
+                            current_time += audio_length
+                            
+                            # 添加到段落列表
+                            audio_segments.append((audio_data, sample_rate))
                         else:
-                            print(f"[IndexTTS Pro] Warning: Invalid audio data or sample rate")
+                            print(f"[IndexTTS Pro] Warning: Invalid audio data")
                     else:
                         print(f"[IndexTTS Pro] Warning: Unexpected TTS model return format: {type(result)}")
                         if isinstance(result, np.ndarray):
                             print(f"[IndexTTS Pro] Assuming default sample rate for numpy array return: shape={result.shape}")
-                            audio_segments.append((result, 24000))
+                            if result.size > 0:
+                                audio_length = len(result) / 24000
+                                start_time = self._seconds_to_time_format(current_time)
+                                end_time = self._seconds_to_time_format(current_time + audio_length)
+                                subtitle_item = {
+                                    "id": role,
+                                    "字幕": text,
+                                    "start": start_time,
+                                    "end": end_time
+                                }
+                                subtitle_data.append(subtitle_item)
+                                current_time += audio_length
+                                audio_segments.append((result, 24000))
                         elif isinstance(result, int):
                             print(f"[IndexTTS Pro] Got only sample rate without audio data")
                         else:
@@ -420,8 +455,13 @@ class IndexTTSProNode:
             
             print(f"[IndexTTS Pro] Final tensor shape: {audio_tensor.shape}")
             
-            # 最终返回ComfyUI格式的音频数据
-            return ({"waveform": audio_tensor, "sample_rate": final_audio[1]}, seed)
+            # 生成SubtitleJSON字符串
+            import json
+            subtitle_json = json.dumps(subtitle_data, ensure_ascii=False, indent=2)
+            print(f"[IndexTTS Pro] Generated subtitle data with {len(subtitle_data)} items")
+            
+            # 最终返回ComfyUI格式的音频数据和Subtitle
+            return ({"waveform": audio_tensor, "sample_rate": final_audio[1]}, seed, subtitle_json)
             
         except Exception as e:
             import traceback
