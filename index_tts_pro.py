@@ -51,8 +51,8 @@ class IndexTTSProNode:
             }
         }
     
-    RETURN_TYPES = ("AUDIO", "INT", "STRING",)
-    RETURN_NAMES = ("audio", "seed", "Subtitle",)
+    RETURN_TYPES = ("AUDIO", "INT", "STRING", "STRING",)
+    RETURN_NAMES = ("audio", "seed", "Subtitle", "SimplifiedSubtitle",)
     FUNCTION = "generate_multi_voice_speech"
     CATEGORY = "audio"
     
@@ -273,10 +273,25 @@ class IndexTTSProNode:
         Returns:
             str: 格式化的时间字符串，如 "1:23"
         """
-        total_seconds = int(seconds)
-        minutes = total_seconds // 60
-        remaining_seconds = total_seconds % 60
-        return f"{minutes}:{remaining_seconds:02d}"
+        minutes = int(seconds // 60)
+        seconds = int(seconds % 60)
+        return f"{minutes}:{seconds:02d}"
+        
+    def _parse_time_format(self, time_str):
+        """将时间字符串转换为秒数
+        
+        Args:
+            time_str: 时间字符串，如 "1:23"
+            
+        Returns:
+            float: 对应的秒数
+        """
+        parts = time_str.split(":")
+        if len(parts) == 2:
+            minutes = int(parts[0])
+            seconds = int(parts[1])
+            return minutes * 60 + seconds
+        return 0.0
     
     def generate_multi_voice_speech(self, structured_text, narrator_audio, model_version="Index-TTS", 
                                    language="auto", speed=1.0, seed=0, 
@@ -460,8 +475,62 @@ class IndexTTSProNode:
             subtitle_json = json.dumps(subtitle_data, ensure_ascii=False, indent=2)
             print(f"[IndexTTS Pro] Generated subtitle data with {len(subtitle_data)} items")
             
-            # 最终返回ComfyUI格式的音频数据和Subtitle
-            return ({"waveform": audio_tensor, "sample_rate": final_audio[1]}, seed, subtitle_json)
+            # 生成简化字幕格式 (只包含时间和处理后实际分句的文本，不包含角色名)
+            simplified_subtitles = []
+            
+            # 在这里，由于我们没有直接获取到TTS处理后的分句，需要从模型日志中获取或使用一个模拟处理
+            # 这部分需要根据tts_models.py中的实际处理逻辑调整
+            
+            # 我们使用带有冒号的时间格式
+            process_timepoints = []
+            current_pos = 0.0
+            
+            # 为每个角色的每句话创建时间点
+            for item in subtitle_data:
+                # 使用原始的带冒号时间格式
+                start_time = item["start"]
+                end_time = item["end"]
+                text = item["字幕"]
+                
+                # 模拟分句处理 - 实际应该从模型中获取
+                # 这里简单地按标点符号拆分
+                import re
+                # 将文本拆分为句子 (中文标点和英文标点)
+                sentences = re.split(r'([,，.。!！?？;；])', text)
+                # 过滤空字符串并重组句子和标点
+                sentences = [s + next_s for s, next_s in zip(sentences[::2], sentences[1::2] + [""])] if len(sentences) > 1 else [text]
+                sentences = [s for s in sentences if s.strip()]
+                
+                if not sentences:  # 如果没有成功分句，就使用原始文本
+                    sentences = [text]
+                
+                # 计算每个子句的时长
+                total_duration = self._parse_time_format(end_time) - self._parse_time_format(start_time)
+                sentence_duration = total_duration / len(sentences) if sentences else total_duration
+                
+                # 为每个子句生成时间点
+                for i, sentence in enumerate(sentences):
+                    if not sentence.strip():  # 跳过空句
+                        continue
+                    
+                    sub_start = self._parse_time_format(start_time) + i * sentence_duration
+                    sub_end = sub_start + sentence_duration
+                    
+                    sub_start_formatted = self._seconds_to_time_format(sub_start)
+                    sub_end_formatted = self._seconds_to_time_format(sub_end)
+                    
+                    time_line = f">> {sub_start_formatted}-{sub_end_formatted}"
+                    text_line = f">> {sentence}"
+                    
+                    simplified_subtitles.append(time_line)
+                    simplified_subtitles.append(text_line)
+            
+            # 连接为字符串
+            simplified_subtitle_str = "\n".join(simplified_subtitles)
+            print(f"[IndexTTS Pro] Generated simplified subtitle format with processed sentences")
+            
+            # 最终返回ComfyUI格式的音频数据、种子、JSON字幕和简化字幕
+            return ({"waveform": audio_tensor, "sample_rate": final_audio[1]}, seed, subtitle_json, simplified_subtitle_str)
             
         except Exception as e:
             import traceback
