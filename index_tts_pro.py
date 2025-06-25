@@ -265,32 +265,46 @@ class IndexTTSProNode:
             return None
     
     def _seconds_to_time_format(self, seconds):
-        """将秒数转换为分:秒格式
+        """将秒数转换为分:秒.毫秒格式
         
         Args:
             seconds: 秒数(float)
             
         Returns:
-            str: 格式化的时间字符串，如 "1:23"
+            str: 格式化的时间字符串，如 "1:23.456"
         """
         minutes = int(seconds // 60)
-        seconds = int(seconds % 60)
-        return f"{minutes}:{seconds:02d}"
+        remaining_seconds = seconds % 60
+        seconds_int = int(remaining_seconds)
+        milliseconds = int((remaining_seconds - seconds_int) * 1000)
+        return f"{minutes}:{seconds_int:02d}.{milliseconds:03d}"
         
     def _parse_time_format(self, time_str):
         """将时间字符串转换为秒数
         
         Args:
-            time_str: 时间字符串，如 "1:23"
+            time_str: 时间字符串，如 "1:23.456" 或 "1:23"
             
         Returns:
             float: 对应的秒数
         """
-        parts = time_str.split(":")
-        if len(parts) == 2:
-            minutes = int(parts[0])
-            seconds = int(parts[1])
-            return minutes * 60 + seconds
+        # 支持带毫秒和不带毫秒的格式
+        if "." in time_str:
+            # 格式: mm:ss.sss
+            time_part, ms_part = time_str.split(".")
+            parts = time_part.split(":")
+            if len(parts) == 2:
+                minutes = int(parts[0])
+                seconds = int(parts[1])
+                milliseconds = int(ms_part[:3].ljust(3, '0'))  # 确保是3位毫秒
+                return minutes * 60 + seconds + milliseconds / 1000.0
+        else:
+            # 格式: mm:ss (向后兼容)
+            parts = time_str.split(":")
+            if len(parts) == 2:
+                minutes = int(parts[0])
+                seconds = int(parts[1])
+                return minutes * 60 + seconds
         return 0.0
     
     def generate_multi_voice_speech(self, structured_text, narrator_audio, model_version="Index-TTS", 
