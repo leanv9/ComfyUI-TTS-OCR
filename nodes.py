@@ -46,8 +46,8 @@ class IndexTTSNode:
             }
         }
     
-    RETURN_TYPES = ("AUDIO", "INT",)
-    RETURN_NAMES = ("audio", "seed",)
+    RETURN_TYPES = ("AUDIO", "INT", "STRING",)
+    RETURN_NAMES = ("audio", "seed", "SimplifiedSubtitle",)
     FUNCTION = "generate_speech"
     CATEGORY = "audio"
     
@@ -74,6 +74,49 @@ class IndexTTSNode:
                 print(f"[IndexTTS] 模型 {version} 目录内容: {len(model_files)} 个文件")
             else:
                 print(f"[IndexTTS] 警告: 模型 {version} 目录不存在: {directory}")
+    
+    def _seconds_to_time_format(self, seconds):
+        """将秒数转换为分:秒.毫秒格式
+        
+        Args:
+            seconds: 秒数(float)
+            
+        Returns:
+            str: 格式化的时间字符串，如 "1:23.456"
+        """
+        minutes = int(seconds // 60)
+        remaining_seconds = seconds % 60
+        seconds_int = int(remaining_seconds)
+        milliseconds = int((remaining_seconds - seconds_int) * 1000)
+        return f"{minutes}:{seconds_int:02d}.{milliseconds:03d}"
+        
+    def _parse_time_format(self, time_str):
+        """将时间字符串转换为秒数
+        
+        Args:
+            time_str: 时间字符串，如 "1:23.456" 或 "1:23"
+            
+        Returns:
+            float: 对应的秒数
+        """
+        # 支持带毫秒和不带毫秒的格式
+        if "." in time_str:
+            # 格式: mm:ss.sss
+            time_part, ms_part = time_str.split(".")
+            parts = time_part.split(":")
+            if len(parts) == 2:
+                minutes = int(parts[0])
+                seconds = int(parts[1])
+                milliseconds = int(ms_part[:3].ljust(3, '0'))  # 确保是3位毫秒
+                return minutes * 60 + seconds + milliseconds / 1000.0
+        else:
+            # 格式: mm:ss (向后兼容)
+            parts = time_str.split(":")
+            if len(parts) == 2:
+                minutes = int(parts[0])
+                seconds = int(parts[1])
+                return minutes * 60 + seconds
+        return 0.0
     
     def _init_model(self, model_version="Index-TTS"):
         """初始化TTS模型（延迟加载）
@@ -302,7 +345,55 @@ class IndexTTSNode:
                     "sample_rate": sample_rate
                 }
                 
-                return (audio_dict, seed)
+                # 生成SimplifiedSubtitle
+                try:
+                    # 计算总音频长度
+                    total_duration = audio_data.shape[-1] / sample_rate
+                    
+                    # 模拟分句处理 - 按标点符号拆分文本
+                    import re
+                    sentences = re.split(r'([,，.。!！?？;；])', text)
+                    # 过滤空字符串并重组句子和标点
+                    sentences = [s + next_s for s, next_s in zip(sentences[::2], sentences[1::2] + [""])] if len(sentences) > 1 else [text]
+                    sentences = [s for s in sentences if s.strip()]
+                    
+                    if not sentences:  # 如果没有成功分句，就使用原始文本
+                        sentences = [text]
+                    
+                    # 计算每个子句的时长
+                    sentence_duration = total_duration / len(sentences) if sentences else total_duration
+                    
+                    # 生成简化字幕格式
+                    simplified_subtitles = []
+                    current_time = 0.0
+                    
+                    for i, sentence in enumerate(sentences):
+                        if not sentence.strip():  # 跳过空句
+                            continue
+                        
+                        start_time = current_time
+                        end_time = current_time + sentence_duration
+                        
+                        start_formatted = self._seconds_to_time_format(start_time)
+                        end_formatted = self._seconds_to_time_format(end_time)
+                        
+                        time_line = f">> {start_formatted}-{end_formatted}"
+                        text_line = f">> {sentence.strip()}"
+                        
+                        simplified_subtitles.append(time_line)
+                        simplified_subtitles.append(text_line)
+                        
+                        current_time = end_time
+                    
+                    # 连接为字符串
+                    simplified_subtitle_str = "\n".join(simplified_subtitles)
+                    print(f"[IndexTTS] 生成SimplifiedSubtitle，包含 {len(sentences)} 个句子")
+                    
+                except Exception as e:
+                    print(f"[IndexTTS] 生成SimplifiedSubtitle失败: {e}")
+                    simplified_subtitle_str = f">> 0:00.000-{self._seconds_to_time_format(total_duration)}\n>> {text}"
+                
+                return (audio_dict, seed, simplified_subtitle_str)
             else:
                 print(f"错误: 意外的返回格式: {type(result)}")
                 raise ValueError(f"TTS模型返回了意外的格式: {type(result)}")
@@ -327,4 +418,4 @@ class IndexTTSNode:
                 "sample_rate": sample_rate
             }
             
-            return (audio_dict, seed)
+            return (audio_dict, seed, "")
