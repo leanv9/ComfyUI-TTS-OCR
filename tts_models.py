@@ -19,7 +19,6 @@ if current_dir not in sys.path:
 # 导入官方IndexTTS实现
 from indextts.infer import IndexTTS
 
-
 class IndexTTSModel:
     """Wrapper for official IndexTTS implementation"""
     

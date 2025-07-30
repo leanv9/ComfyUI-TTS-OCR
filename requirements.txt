@@ -7,3 +7,4 @@ PyYAML>=6.0
 pynini==2.1.6; platform_system!="Windows"
 WeTextProcessing>=1.0.3; platform_system!="Windows"
 omegaconf>=2.3.0
+faster_whisper==1.1.1

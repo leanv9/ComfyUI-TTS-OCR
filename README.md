@@ -4,8 +4,33 @@
 
 在此郑重声明，本项目所有个人使用行为与开发者本人及本项目本身均无任何关联。开发者对于项目使用者的行为不承担任何责任，使用者应自行承担使用过程中可能产生的所有风险和法律责任。请广大使用者在遵守法律法规及相关规定的前提下，合理、合法地使用本项目，维护开源社区的良好秩序与健康发展。
 
+srt字幕使用的whisper模型
+
 感谢您的理解与支持！
 
+# 项目介绍
+
+### 1.ocr部分，包括生成srt字幕使用的whisper模型，模型下载放在models/whisper目录下
+
+
+### 安装节点
+
+1. 将此代码库克隆或下载到ComfyUI的`custom_nodes`目录：
+   ```bash
+   cd ComfyUI/custom_nodes
+   git clone https://gitee.com/leanv/ComfyUI-TTS-OCR.git
+   ```
+
+2. 安装依赖： 安装依赖：
+
+   ```bash
+   cd ComfyUI-TTS-OCR
+   .\python_embeded\python.exe -m pip install -r requirements.txt
+   ```
+
+### 2.本项目TTS部分是ComfyUI-Index-TTS的分支修改而来，下面是具体安装方法
+
+ComfyUI/models/Index-TTS/ 或 ComfyUI/models/IndexTTS-1.5/ 目录下放入IndexTTS模型文件
 
 # ComfyUI-Index-TTS
 
